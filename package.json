@@ -29,6 +29,7 @@
     "admin:grant": "tsx backend/scripts/admin-grant.ts grant",
     "admin:revoke": "tsx backend/scripts/admin-grant.ts revoke",
     "mail:preview": "tsx backend/scripts/mail-preview.ts",
+    "mail:test": "tsx backend/scripts/mail-test.ts",
     "cron:run": "tsx --conditions=react-server backend/scripts/cron.ts",
     "storage:check": "tsx backend/scripts/storage-check.ts",
     "storage:push": "tsx backend/scripts/storage-push.ts",

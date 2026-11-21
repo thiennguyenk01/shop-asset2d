@@ -5,8 +5,9 @@
  * production keys into a local build.
  *
  *   npm run prod:init     write the template (random AUTH_SECRET / CRON_SECRET; refuses to overwrite)
- *   npm run prod:check    list every problem: the app's own production rules (backend/src/env.ts), the production
- *                         database, separate buckets and secrets, a mail service that exists in the code…
+ *   npm run prod:check    list every problem: the app's own production rules (backend/src/env.ts: no Demo, no
+ *                         r2.dev, a real mail service with its key…), the production database, separate buckets
+ *                         and secrets…
  *   npm run prod:check -- --storage   also run `storage:check` against the production buckets (writes and removes
  *                         a tiny test object in each bucket; nothing else)
  *
@@ -21,9 +22,6 @@ import { parseEnv } from "../src/env";
 import { hostOf, isNeonPooledHost } from "./db-guard";
 
 export const PROD_VERCEL_ENV_FILE = ".env.vercel-production";
-
-/** Mail drivers the code can actually send with (backend/src/mail/index.ts). `outbox` only writes files. */
-export const IMPLEMENTED_MAIL_DRIVERS = ["outbox"] as const;
 
 const normalize = (h?: string) => h?.replace(/-pooler(?=\.)/, "");
 
@@ -85,13 +83,7 @@ export function checkProductionEnv(prod: Record<string, string>, others: Record<
     problems.push(...readableEnvErrors(e instanceof Error ? e.message : String(e)).filter((l) => !(missing as string[]).includes(subject(l))));
   }
 
-  // 2. A mail service that really sends (the startup check only refuses `outbox`).
-  const mail = prod.MAIL_DRIVER || "outbox";
-  if (mail !== "outbox" && !(IMPLEMENTED_MAIL_DRIVERS as readonly string[]).includes(mail)) {
-    problems.push(`MAIL_DRIVER=${mail} chưa có trong code: cần chọn và làm dịch vụ gửi email thật (Resend / SMTP) trước khi chạy thật.`);
-  }
-
-  // 3. The production database, through its pooled connection.
+  // 2. The production database, through its pooled connection.
   const dbHost = hostOf(prod.DATABASE_URL);
   const prodHosts = (prod.PRODUCTION_DATABASE_HOSTS ?? "").split(",").map((h) => normalize(h.trim().toLowerCase())).filter(Boolean);
   if (prod.DATABASE_URL && !isNeonPooledHost(dbHost)) problems.push(`${file}: DATABASE_URL phải là kết nối pooled (host -pooler) của nhánh production.`);
@@ -100,12 +92,12 @@ export function checkProductionEnv(prod: Record<string, string>, others: Record<
   }
   if (prod.DIRECT_URL) problems.push(`${file}: bỏ DIRECT_URL. Web chạy thật không cần nó; kết nối direct của production chỉ nằm trong .env.production-db lúc chạy db:prod:*.`);
 
-  // 4. The address customers use.
+  // 3. The address customers use.
   if (prod.APP_URL && /-git-[a-z0-9-]+\.vercel\.app/i.test(prod.APP_URL)) {
     problems.push(`${file}: APP_URL đang là địa chỉ của bản thử (…-git-…vercel.app): dùng địa chỉ của web thật.`);
   }
 
-  // 5. Nothing shared with dev / the preview.
+  // 4. Nothing shared with dev / the preview.
   for (const other of others) {
     for (const host of [hostOf(other.DATABASE_URL), hostOf(other.DIRECT_URL)]) {
       if (host && normalize(host) === normalize(dbHost)) problems.push(`${file}: DATABASE_URL trùng database của dev / bản thử.`);
@@ -150,9 +142,10 @@ export function productionTemplate(local: Record<string, string>): string {
     "R2_PUBLIC_BUCKET=asset-game-prod-public",
     "R2_PRIVATE_BUCKET=asset-game-prod-private",
     "R2_PUBLIC_BASE_URL=",
-    "# Email thật: chưa chọn dịch vụ (Resend / SMTP) — prod:check báo cho tới khi có",
-    "MAIL_DRIVER=",
-    "MAIL_FROM=",
+    "# Email thật qua Resend: khoá API (re_…) và người gửi thuộc tên miền đã xác minh ở Resend",
+    "MAIL_DRIVER=resend",
+    "MAIL_FROM=Asset Game MMORPG 2D <no-reply@asset2d.id.vn>",
+    "RESEND_API_KEY=",
     "",
   ].join("\n");
 }

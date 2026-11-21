@@ -12,7 +12,7 @@ const local = {
   R2_ACCOUNT_ID: "0123456789abcdef0123456789abcdef",
 };
 const preview = { R2_PUBLIC_BUCKET: "preview-public", R2_PRIVATE_BUCKET: "preview-private", AUTH_SECRET: "p".repeat(43) };
-/** Everything right, except the mail service: the code can only write mails to files today. */
+/** Everything right. */
 const prod = {
   APP_URL: "https://asset2d.vercel.app",
   DATABASE_URL: "postgresql://u:p@ep-prod-9-pooler.ap-southeast-1.aws.neon.tech/db?sslmode=verify-full",
@@ -34,14 +34,18 @@ const prod = {
   R2_PUBLIC_BASE_URL: "https://media.example.com",
   MAIL_DRIVER: "resend",
   MAIL_FROM: "Shop <no-reply@example.com>",
+  RESEND_API_KEY: "re_prod",
 };
 const check = (over: Record<string, string>) => checkProductionEnv({ ...prod, ...over }, [local, preview]).join("\n");
 
 describe("production env", () => {
-  it("only the missing mail service remains when everything else is right", () => {
-    const problems = checkProductionEnv(prod, [local, preview]);
-    expect(problems).toHaveLength(1);
-    expect(problems[0]).toMatch(/MAIL_DRIVER=resend chưa có trong code/);
+  it("a complete live configuration has no problem", () => {
+    expect(checkProductionEnv(prod, [local, preview])).toEqual([]);
+  });
+  it("mail: Resend with its key and the shop's own sender; smtp is not in the code", () => {
+    expect(check({ RESEND_API_KEY: "" })).toMatch(/RESEND_API_KEY/);
+    expect(check({ MAIL_FROM: "Shop <onboarding@resend.dev>" })).toMatch(/MAIL_FROM/);
+    expect(check({ MAIL_DRIVER: "smtp" })).toMatch(/smtp/);
   });
   it("the app's own production rules: no Demo, no r2.dev, no mail outbox, a long CRON_SECRET", () => {
     expect(check({ PAYMENT_PROVIDER: "demo" })).toMatch(/demo/);
@@ -75,7 +79,7 @@ describe("production env", () => {
     const t = parse(productionTemplate(local));
     expect(t.AUTH_SECRET).toMatch(/^[\w-]{43}$/);
     expect(t.CRON_SECRET).not.toBe(t.AUTH_SECRET);
-    expect(t).toMatchObject({ PAYMENT_PROVIDER: "sepay", SEPAY_MODE: "live", STORAGE_DRIVER: "r2", APP_URL: "", DATABASE_URL: "" });
+    expect(t).toMatchObject({ PAYMENT_PROVIDER: "sepay", SEPAY_MODE: "live", STORAGE_DRIVER: "r2", MAIL_DRIVER: "resend", RESEND_API_KEY: "", APP_URL: "", DATABASE_URL: "" });
     expect(t.PRODUCTION_DATABASE_HOSTS).toBe(local.PRODUCTION_DATABASE_HOSTS);
   });
 });

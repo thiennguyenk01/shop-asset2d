@@ -159,6 +159,8 @@ describe("configuration (PAYMENT_PROVIDER=momo)", () => {
     R2_PRIVATE_BUCKET: "priv",
     R2_PUBLIC_BASE_URL: "https://media.example.com",
     MAIL_DRIVER: "resend",
+    MAIL_FROM: "Shop <no-reply@shop.example.com>",
+    RESEND_API_KEY: "re_test_key",
     CRON_SECRET: "c".repeat(32),
   };
   it("defaults to MoMo's test environment and needs the three keys", () => {

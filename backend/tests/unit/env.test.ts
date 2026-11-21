@@ -14,6 +14,8 @@ const prodBase = {
   R2_PRIVATE_BUCKET: "priv",
   R2_PUBLIC_BASE_URL: "https://media.example.com",
   MAIL_DRIVER: "resend",
+  MAIL_FROM: "Shop <no-reply@shop.example.com>",
+  RESEND_API_KEY: "re_test_key",
   CRON_SECRET: "c".repeat(32),
 };
 
@@ -73,6 +75,16 @@ describe("parseEnv", () => {
     delete rest.MAIL_DRIVER; // unset → outbox → refused
     expect(() => parseEnv(rest)).toThrow(/MAIL_DRIVER/);
     expect(() => parseEnv({ MAIL_DRIVER: "sendgrid" })).toThrow();
+  });
+
+  it("mail: resend needs its key; smtp is not implemented; production sends from the shop's domain (GĐ7.7)", () => {
+    expect(() => parseEnv({ MAIL_DRIVER: "resend" })).toThrow(/RESEND_API_KEY/);
+    expect(() => parseEnv({ MAIL_DRIVER: "resend", RESEND_API_KEY: "sk_wrong" })).toThrow(/RESEND_API_KEY/);
+    expect(parseEnv({ MAIL_DRIVER: "resend", RESEND_API_KEY: "re_x" }).MAIL_DRIVER).toBe("resend");
+    expect(() => parseEnv({ MAIL_DRIVER: "smtp" })).toThrow(/smtp/);
+    expect(() => parseEnv({ ...prodBase, MAIL_FROM: "Shop <no-reply@localhost>" })).toThrow(/MAIL_FROM/);
+    expect(() => parseEnv({ ...prodBase, MAIL_FROM: "Shop <onboarding@resend.dev>" })).toThrow(/MAIL_FROM/);
+    expect(() => parseEnv({ ...prodBase, MAIL_FROM: "no-reply@shop.example.com" })).not.toThrow();
   });
 
   it("scheduled jobs: production needs a CRON_SECRET of 32+ characters; development may leave it unset (GĐ6.3)", () => {

@@ -17,8 +17,8 @@ export const PAYMENT_PROVIDERS = ["demo", "payos", "vnpay", "momo", "sepay"] as 
 export const SEPAY_MODES = ["test", "live"] as const;
 export const STORAGE_DRIVERS = ["local", "r2"] as const;
 /**
- * GĐ6 (DECISIONS #38): in development mail is written to files (`outbox`), never sent. The real service
- * (Resend or SMTP) is chosen at deployment; both names are reserved here and implemented then.
+ * GĐ6 (DECISIONS #38): in development mail is written to files (`outbox`), never sent. GĐ7.7: the real service
+ * is Resend (user choice; backend/src/mail/resend.ts). `smtp` stays reserved and is refused until implemented.
  */
 export const MAIL_DRIVERS = ["outbox", "resend", "smtp"] as const;
 
@@ -93,6 +93,8 @@ const baseSchema = z.object({
   MAIL_DRIVER: z.enum(MAIL_DRIVERS).default("outbox"),
   MAIL_OUTBOX_DIR: z.string().default(".mail-outbox"),
   MAIL_FROM: z.string().min(3).default("Asset Game MMORPG 2D <no-reply@localhost>"),
+  /** GĐ7.7 (MAIL_DRIVER=resend): Resend API key ("re_…"). Only in .env.local / the host's settings. */
+  RESEND_API_KEY: optionalString,
   /** GĐ6.3: the scheduled jobs (/api/cron/*) answer only `Authorization: Bearer <CRON_SECRET>`. */
   CRON_SECRET: optionalString,
   /** GĐ6.4 MoMo (PAYMENT_PROVIDER=momo). Keys only in .env.local / the host's settings, never in the repo. */
@@ -142,12 +144,25 @@ export function parseEnv(raw: RawEnv): Env {
     }
     // GĐ6: the dev outbox only writes files; on production a customer would never get the mail.
     if (env.MAIL_DRIVER === "outbox") {
-      problems.push("MAIL_DRIVER=outbox chỉ dùng ở dev (thư chỉ được ghi ra file); production cần dịch vụ gửi thật (resend / smtp).");
+      problems.push("MAIL_DRIVER=outbox chỉ dùng ở dev (thư chỉ được ghi ra file); production cần dịch vụ gửi thật (resend).");
+    }
+    // The sender must be the shop's own verified domain: localhost never delivers, and Resend's test sender
+    // (onboarding@resend.dev) only reaches the Resend account's own address.
+    const fromDomain = /@([^\s>]+)>?\s*$/.exec(env.MAIL_FROM)?.[1]?.toLowerCase();
+    if (!fromDomain || fromDomain === "localhost" || fromDomain === "resend.dev") {
+      problems.push("MAIL_FROM trên production phải là địa chỉ thuộc tên miền của cửa hàng (đã xác minh ở dịch vụ gửi thư), không phải localhost hay resend.dev.");
     }
     // GĐ6.3: without it the scheduled jobs never run (every call is refused).
     if (!env.CRON_SECRET || env.CRON_SECRET.length < 32) {
       problems.push("CRON_SECRET là bắt buộc trên production và phải dài tối thiểu 32 ký tự (bảo vệ /api/cron/*).");
     }
+  }
+
+  if (env.MAIL_DRIVER === "resend" && !env.RESEND_API_KEY?.startsWith("re_")) {
+    problems.push("RESEND_API_KEY là bắt buộc khi MAIL_DRIVER=resend (khoá API của Resend, bắt đầu bằng re_).");
+  }
+  if (env.MAIL_DRIVER === "smtp") {
+    problems.push("MAIL_DRIVER=smtp chưa có trong code: dùng resend (hoặc outbox ở dev).");
   }
 
   if (env.PAYMENT_PROVIDER === "momo") {

@@ -49,9 +49,40 @@ test.describe("Admin: usage of the free plans", () => {
         await expect(card.getByRole("meter")).toBeVisible();
       }
       await expect(visible(page, "usage-tables").getByRole("listitem").first()).toBeVisible();
+      await expect(visible(page, "usage-mode")).toHaveAttribute("data-on", "true");
       await visible(page, "usage-refresh").click();
       await expect(visible(page, "usage-database").getByRole("meter")).toBeVisible();
     } finally {
+      adminCommand("revoke", email);
+    }
+  });
+
+  test("Settings: \"free plans only\" is on; turning it off needs OPEN; it turns back on", async ({ page }) => {
+    test.setTimeout(120_000);
+    const email = `e2e-adm-use-free-${uid()}@example.test`;
+    await register(page, email);
+    adminCommand("grant", email);
+    const state = () => visible(page, "free-tier-state");
+    try {
+      await page.goto("/vi/admin/settings");
+      await expect(state()).toHaveAttribute("data-on", "true");
+      await expect(state()).toHaveText(vi.adminSettings.freeTierOn);
+
+      const form = visible(page, "free-tier-form");
+      await form.getByLabel(vi.adminSettings.freeTierConfirm.replace("{word}", "OPEN")).fill("mở");
+      await visible(page, "free-tier-off").click();
+      await expect(form.getByRole("alert")).toContainText(vi.adminSettings.errors.confirm.replace("{word}", "OPEN"));
+      await expect(state()).toHaveAttribute("data-on", "true");
+
+      await form.getByLabel(vi.adminSettings.freeTierConfirm.replace("{word}", "OPEN")).fill("OPEN");
+      await visible(page, "free-tier-off").click();
+      await expect(state()).toHaveAttribute("data-on", "false");
+
+      await visible(page, "free-tier-on").click();
+      await expect(state()).toHaveAttribute("data-on", "true");
+    } finally {
+      // Never leave the shop able to pass the free plans: put the switch back on if a step above failed.
+      if ((await state().getAttribute("data-on").catch(() => "true")) === "false") await visible(page, "free-tier-on").click();
       adminCommand("revoke", email);
     }
   });

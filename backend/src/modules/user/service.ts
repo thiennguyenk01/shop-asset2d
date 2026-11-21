@@ -2,9 +2,11 @@ import "server-only";
 import { Prisma, type Locale } from "@backend/generated/prisma/client";
 import { hashPassword, verifyPassword } from "@backend/auth/password";
 import type { ChangePasswordInput, ProfileInput, RegisterInput } from "@backend/lib/schemas/auth";
+import { databaseBlockedByFreeTier } from "@backend/modules/usage/guard";
 import { createUser, findUserCredentials, findUserProfile, updatePasswordAndRevokeSessions, updateUserName } from "./repository";
 
-export type RegisterResult = { ok: true; userId: string } | { ok: false; error: "emailTaken" };
+/** shopPaused: "free plans only" is on and the database has reached the free allowance. */
+export type RegisterResult = { ok: true; userId: string } | { ok: false; error: "emailTaken" | "shopPaused" };
 
 /**
  * Create a USER account (CLAUDE.md §5: everyone signs up as USER; ADMIN is never self-assigned).
@@ -12,6 +14,7 @@ export type RegisterResult = { ok: true; userId: string } | { ok: false; error: 
  * The unique index on email is the source of truth, so two parallel sign-ups cannot both succeed.
  */
 export async function registerUser(input: RegisterInput, locale: Locale): Promise<RegisterResult> {
+  if (await databaseBlockedByFreeTier()) return { ok: false, error: "shopPaused" };
   const passwordHash = await hashPassword(input.password);
   try {
     const user = await createUser({ email: input.email, name: input.name, passwordHash, preferredLocale: locale });

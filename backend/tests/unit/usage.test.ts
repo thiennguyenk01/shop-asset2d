@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { formatBytes } from "@backend/lib/format";
-import { emailWindows, FREE_LIMITS, usageLevel, usagePercent, worstLevel } from "@backend/lib/usage/rules";
+import { freeTierOpenConfirmed } from "@backend/lib/admin/settings-rules";
+import {
+  databaseFull,
+  emailWindows,
+  FREE_LIMITS,
+  mailOverFreeQuota,
+  STORAGE_BLOCK_BYTES,
+  uploadOverFreeStorage,
+  usageLevel,
+  usagePercent,
+  worstLevel,
+} from "@backend/lib/usage/rules";
 
 /** Admin "Usage": how much of each free allowance is used (user choice 2026-11-22). */
 describe("free plan usage", () => {
@@ -40,5 +51,24 @@ describe("free plan usage", () => {
     expect(formatBytes(12_300, "en")).toBe("12.3 kB");
     expect(formatBytes(512, "en")).toBe("512 byte");
     expect(formatBytes(1_500_000, "vi")).toBe("1,5 MB");
+  });
+
+  it("free plans only: uploads stop at 90 % of R2, sign-ups / orders at a full database, mails at the quota", () => {
+    expect(STORAGE_BLOCK_BYTES).toBe(9e9);
+    expect(uploadOverFreeStorage(8.9e9, 0.1e9)).toBe(false); // exactly 9 GB is still allowed
+    expect(uploadOverFreeStorage(8.9e9, 0.1e9 + 1)).toBe(true);
+    expect(uploadOverFreeStorage(9.5e9, 0)).toBe(true);
+    expect(databaseFull(999_999_999)).toBe(false);
+    expect(databaseFull(1e9)).toBe(true);
+    expect(mailOverFreeQuota(99, 2999)).toBe(false);
+    expect(mailOverFreeQuota(100, 10)).toBe(true);
+    expect(mailOverFreeQuota(5, 3000)).toBe(true);
+  });
+
+  it("turning the mode off needs the word OPEN", () => {
+    expect(freeTierOpenConfirmed("OPEN")).toBe(true);
+    expect(freeTierOpenConfirmed(" open ")).toBe(true);
+    expect(freeTierOpenConfirmed("OPN")).toBe(false);
+    expect(freeTierOpenConfirmed(null)).toBe(false);
   });
 });

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { FormCard } from "@/components/admin/fields";
+import { FreeTierForm } from "@/components/admin/free-tier-form";
 import { SettingsForm } from "@/components/admin/settings-form";
 import type { Locale } from "@backend/i18n/routing";
 import type { ExtraDownloadsSettings } from "@backend/lib/admin/settings-rules";
@@ -48,6 +49,17 @@ async function Settings({ params }: { params: Promise<{ locale: string }> }) {
 
   return (
     <>
+      <FormCard title={t("freeTierTitle")} intro={t("freeTierIntro")}>
+        <p
+          data-testid="free-tier-state"
+          data-on={s.freeTierOnly}
+          className={s.freeTierOnly ? "text-sm font-semibold text-jade-400" : "text-sm font-semibold text-cinnabar-500"}
+        >
+          {s.freeTierOnly ? t("freeTierOn") : t("freeTierOff")}
+        </p>
+        <FreeTierForm on={s.freeTierOnly} />
+      </FormCard>
+
       <FormCard
         title={t("extraTitle")}
         intro={t("extraIntro", {

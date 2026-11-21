@@ -5,9 +5,11 @@ import { Suspense } from "react";
 import { UsageMeter } from "@/components/admin/usage-meter";
 import type { Locale } from "@backend/i18n/routing";
 import { formatBytes } from "@backend/lib/format";
-import { FREE_LIMITS, FREE_LIMITS_CHECKED_ON, type UsageKey } from "@backend/lib/usage/rules";
+import { Link } from "@backend/i18n/navigation";
+import { FREE_LIMITS, FREE_LIMITS_CHECKED_ON, STORAGE_BLOCK_BYTES, type UsageKey } from "@backend/lib/usage/rules";
 import { requireAdminPage } from "@backend/auth/admin-page";
 import { refreshUsageAction } from "@backend/modules/usage/admin-actions";
+import { freeTierOnly } from "@backend/modules/usage/guard";
 import { getUsageReport, type UsageReport } from "@backend/modules/usage/service";
 
 /** Waits for the Admin check (404 for anyone else): see the note on `instant` in frontend/src/app/[locale]/admin/layout.tsx. */
@@ -52,7 +54,7 @@ export default async function AdminUsagePage({ params }: PageProps<"/[locale]/ad
 async function Usage({ params }: { params: Promise<{ locale: string }> }) {
   await requireAdminPage(); // before reading any data
   const locale = (await params).locale as Locale;
-  const [r, t, format] = await Promise.all([getUsageReport(), getTranslations("adminUsage"), getFormatter()]);
+  const [r, t, format, freeOnly] = await Promise.all([getUsageReport(), getTranslations("adminUsage"), getFormatter(), freeTierOnly()]);
   const amount = (key: UsageKey, n: number) => (BYTES.includes(key) ? formatBytes(n, locale) : format.number(n));
 
   return (
@@ -72,6 +74,17 @@ async function Usage({ params }: { params: Promise<{ locale: string }> }) {
           </button>
         </form>
       </div>
+
+      <p
+        data-testid="usage-mode"
+        data-on={freeOnly}
+        className={`rounded-2xl border p-4 text-sm text-pretty ${freeOnly ? "border-jade-600/50 bg-jade-600/10 text-ivory-100" : "border-cinnabar-500/60 bg-cinnabar-600/10 text-ivory-100"}`}
+      >
+        {freeOnly ? t("modeOn", { storageStop: formatBytes(STORAGE_BLOCK_BYTES, locale) }) : t("modeOff")}{" "}
+        <Link href="/admin/settings" className="font-semibold text-gold-300 underline-offset-4 hover:underline">
+          {t("modeLink")}
+        </Link>
+      </p>
 
       <div className="grid gap-3 md:grid-cols-2">
         {(Object.keys(FREE_LIMITS) as UsageKey[]).map((key) => {

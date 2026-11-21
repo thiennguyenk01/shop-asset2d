@@ -3,7 +3,8 @@
 import { refresh, updateTag } from "next/cache";
 import { requireAdmin } from "@backend/auth/guards";
 import { CATALOG_TAG } from "@backend/modules/product/queries";
-import { saveAdminSettings } from "./admin-service";
+import { USAGE_TAG } from "@backend/modules/usage/service";
+import { saveAdminSettings, setFreeTierOnly } from "./admin-service";
 
 /**
  * Admin Settings action (GĐ5.6) — thin: Admin check (`.claude/rules/admin.md`), the service, then the storefront
@@ -45,4 +46,22 @@ export async function saveSettingsAction(
   if (r.changed) updateTag(CATALOG_TAG);
   refresh();
   return { status: "success", changed: r.changed, savedAt: Date.now() };
+}
+
+export type FreeTierFormState = { status: "idle" | "success" | "error"; error?: "forbidden" | "confirm"; savedAt?: number; on?: boolean };
+
+/** "Free plans only" on / off (Settings). `freeTierOnly` = the state asked for; `confirm` = the typed word. */
+export async function setFreeTierAction(_prev: FreeTierFormState, form: FormData): Promise<FreeTierFormState> {
+  let admin;
+  try {
+    admin = await requireAdmin();
+  } catch {
+    return { status: "error", error: "forbidden" };
+  }
+  const on = form.get("freeTierOnly") === "true";
+  const r = await setFreeTierOnly(on, form.get("confirm"), admin.id);
+  if (!r.ok) return { status: "error", error: r.error };
+  updateTag(USAGE_TAG);
+  refresh();
+  return { status: "success", savedAt: Date.now(), on };
 }

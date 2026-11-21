@@ -128,7 +128,8 @@
       "passwordSame": "新密码不能与当前密码相同。",
       "invalidLink": "该密码重置链接已无法使用，请重新申请。",
       "tooManyAttempts": "尝试失败次数过多，请 {minutes} 分钟后再试。",
-      "tooManyRequests": "来自您网络的请求过多，请 {minutes} 分钟后再试。"
+      "tooManyRequests": "来自您网络的请求过多，请 {minutes} 分钟后再试。",
+      "shopPaused": "商店已暂停注册新账户（免费额度已用完）。请稍后再来。"
     }
   },
   "account": {
@@ -508,7 +509,8 @@
       "priceChanged": "购物车或价格刚刚发生变化，请核对总额后再次确认。",
       "amountNotSupported": "当前支付方式仅接受 {min} 至 {max} 的订单。请更换优惠码或调整购物车中的素材包。",
       "paymentUnavailable": "暂时无法连接支付网关，请几分钟后再试。",
-      "generic": "无法创建订单，请重试。"
+      "generic": "无法创建订单，请重试。",
+      "shopPaused": "商店已暂停接收新订单（免费额度已用完）。请稍后再来。"
     },
     "demo": {
       "title": "演示支付网关",
@@ -658,7 +660,8 @@
       "notFree": "Premium 资源包已可无限次下载。",
       "amountNotSupported": "当前支付方式仅接受 {min} 至 {max} 的订单，因此暂时无法购买更多下载次数。",
       "paymentUnavailable": "暂时无法连接支付网关，请几分钟后再试。",
-      "generic": "无法创建订单，请重试。"
+      "generic": "无法创建订单，请重试。",
+      "shopPaused": "商店已暂停接收新订单（免费额度已用完），目前无法购买更多下载次数。"
     },
     "paidTitle": "已增加 {count} 次下载",
     "paidText": "“{title}”已增加 {count} 次下载。点击“立即下载”即可获取。",
@@ -977,7 +980,8 @@
       "versionNotNewer": "必须高于所有已有版本。",
       "notAllowed": "此版本无法执行该操作。",
       "noFile": "发布前至少需要一个文件。",
-      "generic": "出错了，请重试。"
+      "generic": "出错了，请重试。",
+      "freeTierFull": "文件存储已接近免费额度上限（达到 90 % 时停止上传），无法继续上传。请删除部分文件，或在“设置”中关闭“仅使用免费套餐”。"
     },
     "sectionAutoSaved": "图片上传后立即保存，无需点击保存。"
   },
@@ -1394,12 +1398,23 @@
     "unchanged": "没有任何修改。",
     "historyTitle": "修改记录",
     "historyEmpty": "还没有人修改过设置（正在使用默认值）。",
+    "freeTierTitle": "仅使用免费套餐",
+    "freeTierIntro": "开启时，网站不会超出免费额度：R2 文件存储达到 90 % 后管理员无法上传（R2 是唯一会对超额收费的服务）；Neon 数据库已满时顾客无法注册或下单；每天不超过 100 封、每月不超过 3,000 封邮件。用量数值见“用量”页面。",
+    "freeTierOn": "已开启：不会产生超出免费额度的费用。",
+    "freeTierOff": "已关闭：网站可能超出免费额度；R2 超额部分将被收费。",
+    "freeTierConfirm": "输入 {word} 以允许超出免费额度",
+    "freeTierConfirmHint": "仅在准备好为超额付费时关闭。此操作会记录在日志中。",
+    "freeTierTurnOff": "关闭：允许超出免费额度",
+    "freeTierTurnOn": "重新开启：仅使用免费套餐",
+    "freeTierSavedOn": "已重新开启“仅使用免费套餐”。",
+    "freeTierSavedOff": "已关闭“仅使用免费套餐”。",
     "errors": {
       "forbidden": "您没有权限执行此操作。",
       "required": "请填写此项。",
       "notWhole": "请输入整数。",
       "outOfRange": "必须在 {min} 到 {max} 之间。",
-      "generic": "出现错误，请重试。"
+      "generic": "出现错误，请重试。",
+      "confirm": "请准确输入 {word} 以确认。"
     }
   },
   "adminStats": {
@@ -1494,7 +1509,8 @@
       "coupon_create": "创建优惠码",
       "coupon_update": "修改优惠码",
       "coupon_delete": "删除优惠码",
-      "settings_update": "修改设置"
+      "settings_update": "修改设置",
+      "settings_freeTier": "开启 / 关闭“仅使用免费套餐”"
     }
   },
   "email": {
@@ -1753,6 +1769,9 @@
     },
     "bannerWarn": "即将达到免费额度上限：{items}。",
     "bannerCritical": "免费额度即将用完或已超出：{items}。",
-    "bannerLink": "查看用量"
+    "bannerLink": "查看用量",
+    "modeOn": "仅使用免费套餐：已开启。两个存储桶达到 {storageStop} 时停止上传；数据库已满时停止注册和下单；邮件每天 100 封或每月 3,000 封后停止发送。",
+    "modeOff": "仅使用免费套餐：已关闭。网站可能超出免费额度；R2 超额部分将被收费。",
+    "modeLink": "在设置中更改"
   }
 }

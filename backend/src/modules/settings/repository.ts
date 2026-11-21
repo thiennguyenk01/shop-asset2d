@@ -5,6 +5,6 @@ import { getDb } from "@backend/db";
 export function findShopSettings() {
   return getDb().shopSettings.findUnique({
     where: { id: 1 },
-    select: { extraDownloadsCount: true, extraDownloadsPriceVnd: true, updatedAt: true },
+    select: { extraDownloadsCount: true, extraDownloadsPriceVnd: true, freeTierOnly: true, updatedAt: true },
   });
 }

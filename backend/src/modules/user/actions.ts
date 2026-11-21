@@ -24,7 +24,7 @@ import { registerUser } from "./service";
 export type AuthFormState = {
   status: "idle" | "error";
   /** Form-level error (translation key under auth.errors). */
-  error?: "invalidCredentials" | "emailTaken" | "generic" | "invalidLink" | "tooManyAttempts" | "tooManyRequests";
+  error?: "invalidCredentials" | "emailTaken" | "shopPaused" | "generic" | "invalidLink" | "tooManyAttempts" | "tooManyRequests";
   /** tooManyAttempts (GĐ7.1) / tooManyRequests (GĐ7.2): whole minutes to wait. */
   retryMinutes?: number;
   fields?: Partial<Record<string, AuthErrorKey>>;

@@ -50,3 +50,8 @@ export function parseSettingsForm(raw: {
   if (!price.ok) fields.extraDownloadsPriceVnd = price.error;
   return { ok: false, fields };
 }
+
+/** Turning "free plans only" off lets the shop pass the free allowances (and pay): the Admin types this word. */
+export const FREE_TIER_OPEN_WORD = "OPEN";
+
+export const freeTierOpenConfirmed = (typed: unknown) => typeof typed === "string" && typed.trim().toUpperCase() === FREE_TIER_OPEN_WORD;

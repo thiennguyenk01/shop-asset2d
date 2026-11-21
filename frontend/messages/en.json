@@ -128,7 +128,8 @@
       "passwordSame": "Choose a password different from your current one.",
       "invalidLink": "This password reset link no longer works. Ask for a new link.",
       "tooManyAttempts": "Too many failed attempts. Please try again in {minutes, plural, one {# minute} other {# minutes}}.",
-      "tooManyRequests": "Too many requests from your network. Please try again in {minutes, plural, one {# minute} other {# minutes}}."
+      "tooManyRequests": "Too many requests from your network. Please try again in {minutes, plural, one {# minute} other {# minutes}}.",
+      "shopPaused": "The shop has paused new accounts (its free storage is used up). Please come back later."
     }
   },
   "account": {
@@ -508,7 +509,8 @@
       "priceChanged": "Your cart or a price just changed. Check the total and confirm again.",
       "amountNotSupported": "The current payment method only accepts orders from {min} to {max}. Change the coupon or the packs in your cart.",
       "paymentUnavailable": "Could not reach the payment gateway. Please try again in a few minutes.",
-      "generic": "The order could not be created. Please try again."
+      "generic": "The order could not be created. Please try again.",
+      "shopPaused": "The shop has paused new orders (its free storage is used up). Please come back later."
     },
     "demo": {
       "title": "Demo payment gateway",
@@ -658,7 +660,8 @@
       "notFree": "Premium packs already have unlimited downloads.",
       "amountNotSupported": "The current payment method only accepts orders from {min} to {max}, so more downloads cannot be bought right now.",
       "paymentUnavailable": "Could not reach the payment gateway. Please try again in a few minutes.",
-      "generic": "The order could not be created. Please try again."
+      "generic": "The order could not be created. Please try again.",
+      "shopPaused": "The shop has paused new orders (its free storage is used up), so more downloads cannot be bought right now."
     },
     "paidTitle": "{count} downloads added",
     "paidText": "“{title}” has {count} more downloads. Press Download now to get it.",
@@ -977,7 +980,8 @@
       "versionNotNewer": "Must be higher than every existing version.",
       "notAllowed": "Not possible for this version.",
       "noFile": "At least one file is needed before releasing.",
-      "generic": "Something went wrong. Please try again."
+      "generic": "Something went wrong. Please try again.",
+      "freeTierFull": "File storage is close to the free plan limit (uploads stop at 90 %): nothing more can be uploaded. Delete some files, or turn off \"Free plans only\" in Settings."
     },
     "sectionAutoSaved": "Pictures are saved as soon as they upload; no need to press Save."
   },
@@ -1394,12 +1398,23 @@
     "unchanged": "Nothing changed.",
     "historyTitle": "Change history",
     "historyEmpty": "Nobody has changed the settings yet (the defaults are in use).",
+    "freeTierTitle": "Free plans only",
+    "freeTierIntro": "While on, the site adds nothing past the free plans: the Admin cannot upload once file storage reaches 90 % on R2 (the only service that bills an overage); customers cannot sign up or order once the Neon database is full; no more than 100 emails a day or 3,000 a month are sent. The numbers are on the Usage page.",
+    "freeTierOn": "ON: no charge for going past the free plans.",
+    "freeTierOff": "OFF: the site may go past the free plans; R2 overage will be billed.",
+    "freeTierConfirm": "Type {word} to allow going past the free plans",
+    "freeTierConfirmHint": "Only turn it off when you are ready to pay for the overage. It is recorded in the Activity log.",
+    "freeTierTurnOff": "Turn off: allow going past the free plans",
+    "freeTierTurnOn": "Turn back on: free plans only",
+    "freeTierSavedOn": "\"Free plans only\" is back on.",
+    "freeTierSavedOff": "\"Free plans only\" is now off.",
     "errors": {
       "forbidden": "You are not allowed to do this.",
       "required": "Please fill in this field.",
       "notWhole": "Please enter a whole number.",
       "outOfRange": "Must be from {min} to {max}.",
-      "generic": "Something went wrong. Please try again."
+      "generic": "Something went wrong. Please try again.",
+      "confirm": "Type exactly {word} to confirm."
     }
   },
   "adminStats": {
@@ -1494,7 +1509,8 @@
       "coupon_create": "Created a coupon",
       "coupon_update": "Edited a coupon",
       "coupon_delete": "Deleted a coupon",
-      "settings_update": "Changed the settings"
+      "settings_update": "Changed the settings",
+      "settings_freeTier": "Turn \"free plans only\" on / off"
     }
   },
   "email": {
@@ -1753,6 +1769,9 @@
     },
     "bannerWarn": "Close to the free plan limit: {items}.",
     "bannerCritical": "Free plan almost used up or exceeded: {items}.",
-    "bannerLink": "View Usage"
+    "bannerLink": "View Usage",
+    "modeOn": "Free plans only: ON. Uploads stop when the two buckets reach {storageStop}; sign-ups and orders stop when the database is full; emails stop at 100 a day or 3,000 a month.",
+    "modeOff": "Free plans only: OFF. The site may go past the free plans; R2 overage will be billed.",
+    "modeLink": "Change in Settings"
   }
 }

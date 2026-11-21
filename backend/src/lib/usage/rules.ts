@@ -43,3 +43,29 @@ export function emailWindows(now: Date): { day: Date; month: Date } {
     month: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)),
   };
 }
+
+/**
+ * "Free plans only" (user choice 2026-11-22). R2 is the one service that bills an overage (a payment method is on
+ * file), and the app only sees its own two buckets of an account-wide allowance (dev and preview buckets count
+ * too), so uploads stop at 90 % of it. The other services stop by themselves at their limit; the app stops just
+ * before, with a clear message.
+ */
+export const STORAGE_BLOCK_RATIO = 0.9;
+
+/** An upload of `addBytes` would take this environment's buckets past 90 % of the R2 allowance. */
+export function uploadOverFreeStorage(usedBytes: number, addBytes: number): boolean {
+  return usedBytes + Math.max(0, addBytes) > FREE_LIMITS.storage.limit * STORAGE_BLOCK_RATIO;
+}
+
+/** The database has reached the Neon allowance: no new accounts or orders. */
+export function databaseFull(usedBytes: number): boolean {
+  return usedBytes >= FREE_LIMITS.database.limit;
+}
+
+/** Mails already sent (before this one) in the last 24 hours / since the start of the month. */
+export function mailOverFreeQuota(sentDay: number, sentMonth: number): boolean {
+  return sentDay >= FREE_LIMITS.emailDay.limit || sentMonth >= FREE_LIMITS.emailMonth.limit;
+}
+
+/** The R2 bytes at which uploads stop (shown on the Usage page). */
+export const STORAGE_BLOCK_BYTES = FREE_LIMITS.storage.limit * STORAGE_BLOCK_RATIO;

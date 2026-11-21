@@ -1,5 +1,6 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
+import { databaseBlockedByFreeTier } from "@backend/modules/usage/guard";
 import { Prisma } from "@backend/generated/prisma/client";
 import type { Locale } from "@backend/i18n/routing";
 import { extraDownloadsBlock, type ExtraDownloadsBlock } from "@backend/lib/download/rules";
@@ -67,8 +68,11 @@ export async function getCheckout(
 }
 
 export type PlaceOrderBlock = "signInRequired" | "empty" | "priceChanged" | PaymentBlock;
-/** amountNotSupported: the gateway cannot take this total · paymentUnavailable: the gateway did not start the payment. */
-export type PaymentBlock = "amountNotSupported" | "paymentUnavailable";
+/**
+ * amountNotSupported: the gateway cannot take this total · paymentUnavailable: the gateway did not start the payment ·
+ * shopPaused: "free plans only" is on and the database has reached the free allowance (no new orders).
+ */
+export type PaymentBlock = "amountNotSupported" | "paymentUnavailable" | "shopPaused";
 
 const amountSupported = (range: { min: number; max: number }, totalVnd: number) => totalVnd >= range.min && totalVnd <= range.max;
 export type PlaceOrderResult =
@@ -85,6 +89,7 @@ export async function placeOrder(input: {
   now?: Date;
 }): Promise<PlaceOrderResult> {
   const now = input.now ?? new Date();
+  if (await databaseBlockedByFreeTier()) return { ok: false, reason: "shopPaused" };
   const checkout = await getCheckout(input.userId, input.locale, input.couponCode);
   if (!checkout) return { ok: false, reason: "signInRequired" };
   const { summary, buyer } = checkout;
@@ -209,6 +214,7 @@ export async function placeExtraDownloadsOrder(input: {
   const license = pack?.licenses[0]?.license ?? null;
   const block = extraDownloadsBlock(pack ? { status: pack.status, type: pack.type, hasTerms: !!license } : null);
   if (block) return { ok: false, reason: block };
+  if (await databaseBlockedByFreeTier()) return { ok: false, reason: "shopPaused" };
 
   const price = offer.priceVnd;
   const provider = getActiveProvider();

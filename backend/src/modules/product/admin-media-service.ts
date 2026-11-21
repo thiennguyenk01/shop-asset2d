@@ -1,4 +1,5 @@
 import "server-only";
+import { uploadBlockedByFreeTier } from "@backend/modules/usage/guard";
 import { randomBytes } from "node:crypto";
 import {
   checkNewVersion,
@@ -150,7 +151,8 @@ export type StartUploadInput = {
   filename: string;
   size: number;
 };
-export type StartUploadError = "notFound" | "badType" | "tooLarge" | "empty" | "badName" | "tooMany" | "versionLocked";
+/** freeTierFull: "free plans only" is on and the file would take R2 past 90 % of its free allowance. */
+export type StartUploadError = "notFound" | "badType" | "tooLarge" | "empty" | "badName" | "tooMany" | "versionLocked" | "freeTierFull";
 /** `url` + `headers`: where the browser PUTs the bytes and the headers it must send (signed, for R2). */
 export type StartUploadResult =
   | { ok: true; ticket: string; url: string; headers: Record<string, string> }
@@ -159,6 +161,7 @@ export type StartUploadResult =
 export async function startUpload(input: StartUploadInput, adminId: string): Promise<StartUploadResult> {
   const plan = planUpload(input.target, input.filename, input.size);
   if (!plan.ok) return plan;
+  if (await uploadBlockedByFreeTier(input.size)) return { ok: false, error: "freeTierFull" };
   const product = await findAdminProduct(input.productId);
   if (!product) return { ok: false, error: "notFound" };
 

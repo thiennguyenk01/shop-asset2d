@@ -4,6 +4,7 @@ import { refresh, updateTag } from "next/cache";
 import { ADMIN_LOCALES } from "@backend/lib/admin/product-rules";
 import type { UploadTarget } from "@backend/lib/admin/upload-rules";
 import { requireAdmin } from "@backend/auth/guards";
+import { USAGE_TAG } from "@backend/modules/usage/service";
 import type { AdminFormState } from "./admin-actions";
 import {
   createAdminVersion,
@@ -82,6 +83,7 @@ export async function finishUploadAction(ticket: string): Promise<MediaActionRes
     if (result.error !== "badTicket") refresh();
     return result;
   }
+  updateTag(USAGE_TAG); // the next upload is checked against the free storage with this file counted
   return done();
 }
 

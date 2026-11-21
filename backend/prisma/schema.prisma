@@ -571,6 +571,9 @@ model ShopSettings {
   /// "Buy more downloads" for a free pack: downloads added per purchase, and its price in VND.
   extraDownloadsCount    Int
   extraDownloadsPriceVnd Int
+  /// "Free plans only" (user choice 2026-11-22): while true, uploads, sign-ups, orders and mails stop at the free
+  /// allowances (backend/src/lib/usage/rules.ts). Only the Admin turns it off, with a typed confirmation.
+  freeTierOnly           Boolean @default(true)
 
   updatedAt DateTime @updatedAt
 }

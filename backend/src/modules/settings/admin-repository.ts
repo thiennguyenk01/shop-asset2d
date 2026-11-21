@@ -39,3 +39,24 @@ export function saveShopSettingsRows(
     return true;
   });
 }
+
+/**
+ * Turn "free plans only" on / off with its AuditLog row in one transaction (no row yet: create it with the default
+ * "more downloads" offer). Returns false when it was already so.
+ */
+export function saveFreeTierOnlyRow(value: boolean, defaults: ExtraDownloadsSettings, adminId: string): Promise<boolean> {
+  return getDb().$transaction(async (tx) => {
+    const row = await tx.shopSettings.findUnique({ where: { id: 1 }, select: { freeTierOnly: true } });
+    const before = row?.freeTierOnly ?? true;
+    if (before === value) return false;
+    await tx.shopSettings.upsert({
+      where: { id: 1 },
+      create: { id: 1, extraDownloadsCount: defaults.count, extraDownloadsPriceVnd: defaults.priceVnd, freeTierOnly: value },
+      update: { freeTierOnly: value },
+    });
+    await tx.auditLog.create({
+      data: { adminId, action: "settings.freeTier", entity: "ShopSettings", entityId: "1", diff: { freeTierOnly: { before, after: value } } },
+    });
+    return true;
+  });
+}

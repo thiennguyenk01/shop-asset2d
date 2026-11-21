@@ -128,7 +128,8 @@
       "passwordSame": "Mật khẩu mới phải khác mật khẩu hiện tại.",
       "invalidLink": "Link đặt lại mật khẩu không còn dùng được. Hãy yêu cầu một link mới.",
       "tooManyAttempts": "Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau {minutes} phút.",
-      "tooManyRequests": "Có quá nhiều yêu cầu từ mạng của bạn. Vui lòng thử lại sau {minutes} phút."
+      "tooManyRequests": "Có quá nhiều yêu cầu từ mạng của bạn. Vui lòng thử lại sau {minutes} phút.",
+      "shopPaused": "Cửa hàng tạm dừng nhận tài khoản mới (đã dùng hết dung lượng miễn phí). Vui lòng quay lại sau."
     }
   },
   "account": {
@@ -508,7 +509,8 @@
       "priceChanged": "Giỏ hàng hoặc giá vừa thay đổi. Hãy xem lại tổng tiền rồi xác nhận lần nữa.",
       "amountNotSupported": "Cổng thanh toán đang dùng chỉ nhận đơn từ {min} đến {max}. Hãy đổi mã giảm giá hoặc số bộ trong giỏ.",
       "paymentUnavailable": "Chưa kết nối được cổng thanh toán. Vui lòng thử lại sau ít phút.",
-      "generic": "Không tạo được đơn. Vui lòng thử lại."
+      "generic": "Không tạo được đơn. Vui lòng thử lại.",
+      "shopPaused": "Cửa hàng tạm dừng nhận đơn mới (đã dùng hết dung lượng miễn phí). Vui lòng quay lại sau."
     },
     "demo": {
       "title": "Cổng thanh toán Demo",
@@ -658,7 +660,8 @@
       "notFree": "Bộ Premium đã được tải không giới hạn.",
       "amountNotSupported": "Cổng thanh toán đang dùng chỉ nhận đơn từ {min} đến {max}, nên hiện không mua thêm lượt được.",
       "paymentUnavailable": "Chưa kết nối được cổng thanh toán. Vui lòng thử lại sau ít phút.",
-      "generic": "Không tạo được đơn. Vui lòng thử lại."
+      "generic": "Không tạo được đơn. Vui lòng thử lại.",
+      "shopPaused": "Cửa hàng tạm dừng nhận đơn mới (đã dùng hết dung lượng miễn phí), nên hiện không mua thêm lượt được."
     },
     "paidTitle": "Đã cộng {count} lượt tải",
     "paidText": "Bộ “{title}” có thêm {count} lượt tải. Bấm Tải ngay để tải về.",
@@ -977,7 +980,8 @@
       "versionNotNewer": "Phải lớn hơn mọi phiên bản đã có.",
       "notAllowed": "Không làm được với phiên bản này.",
       "noFile": "Cần ít nhất một file trước khi phát hành.",
-      "generic": "Có lỗi xảy ra. Vui lòng thử lại."
+      "generic": "Có lỗi xảy ra. Vui lòng thử lại.",
+      "freeTierFull": "Lưu file đã gần hết gói miễn phí (chặn ở 90 %): không tải thêm được. Xoá bớt file, hoặc tắt chế độ \"Chỉ dùng gói miễn phí\" ở Cài đặt."
     },
     "sectionAutoSaved": "Ảnh được lưu ngay khi tải lên, không cần bấm Lưu."
   },
@@ -1394,12 +1398,23 @@
     "unchanged": "Không có gì thay đổi.",
     "historyTitle": "Lịch sử thay đổi",
     "historyEmpty": "Chưa ai đổi cài đặt (đang dùng mặc định).",
+    "freeTierTitle": "Chỉ dùng gói miễn phí",
+    "freeTierIntro": "Khi bật, web không thêm gì vượt gói miễn phí: Admin không tải file lên khi lưu file R2 tới 90 % (R2 là dịch vụ duy nhất tính tiền phần vượt); khách không đăng ký, không đặt đơn khi database Neon đầy; không gửi email quá 100 thư / ngày hoặc 3.000 thư / tháng. Xem số đo ở trang Dung lượng.",
+    "freeTierOn": "Đang BẬT: không phát sinh phí vượt gói miễn phí.",
+    "freeTierOff": "Đang TẮT: web có thể dùng vượt gói miễn phí; phần vượt của R2 sẽ bị tính tiền.",
+    "freeTierConfirm": "Gõ {word} để cho phép vượt gói miễn phí",
+    "freeTierConfirmHint": "Chỉ tắt khi bạn đã sẵn sàng trả tiền cho phần vượt. Có ghi vào Nhật ký.",
+    "freeTierTurnOff": "Tắt: cho phép vượt gói miễn phí",
+    "freeTierTurnOn": "Bật lại: chỉ dùng gói miễn phí",
+    "freeTierSavedOn": "Đã bật lại chế độ chỉ dùng gói miễn phí.",
+    "freeTierSavedOff": "Đã tắt chế độ chỉ dùng gói miễn phí.",
     "errors": {
       "forbidden": "Bạn không có quyền làm việc này.",
       "required": "Hãy điền ô này.",
       "notWhole": "Hãy nhập số nguyên.",
       "outOfRange": "Phải từ {min} đến {max}.",
-      "generic": "Có lỗi xảy ra. Vui lòng thử lại."
+      "generic": "Có lỗi xảy ra. Vui lòng thử lại.",
+      "confirm": "Gõ đúng chữ {word} để xác nhận."
     }
   },
   "adminStats": {
@@ -1494,7 +1509,8 @@
       "coupon_create": "Tạo mã giảm giá",
       "coupon_update": "Sửa mã giảm giá",
       "coupon_delete": "Xoá mã giảm giá",
-      "settings_update": "Sửa cài đặt"
+      "settings_update": "Sửa cài đặt",
+      "settings_freeTier": "Bật / tắt chế độ chỉ dùng gói miễn phí"
     }
   },
   "email": {
@@ -1753,6 +1769,9 @@
     },
     "bannerWarn": "Sắp chạm giới hạn gói miễn phí: {items}.",
     "bannerCritical": "Gần hết hoặc đã vượt gói miễn phí: {items}.",
-    "bannerLink": "Xem Dung lượng"
+    "bannerLink": "Xem Dung lượng",
+    "modeOn": "Chế độ chỉ dùng gói miễn phí: BẬT. Tải file dừng khi 2 bucket tới {storageStop}; đăng ký và đặt đơn dừng khi database đầy; email dừng ở 100 thư / ngày hoặc 3.000 thư / tháng.",
+    "modeOff": "Chế độ chỉ dùng gói miễn phí: TẮT. Web có thể dùng vượt gói miễn phí; phần vượt của R2 sẽ bị tính tiền.",
+    "modeLink": "Đổi ở Cài đặt"
   }
 }

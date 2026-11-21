@@ -1,6 +1,7 @@
 import "server-only";
 import type { Locale } from "@backend/i18n/routing";
 import { getEnv } from "@backend/env";
+import { mailBlockedByFreeTier } from "@backend/modules/usage/guard";
 import { OutboxTransport } from "./outbox";
 import { ResendTransport } from "./resend";
 import { renderPasswordReset, type PasswordResetMail } from "./render";
@@ -38,6 +39,8 @@ export async function sendPasswordResetMail(
 ): Promise<{ id: string }> {
   const mail = renderPasswordReset(locale, { ...p, email: to });
   const transport = getMailTransport();
+  // "Free plans only": the real service stops at its free quota (this mail's reset token is already counted).
+  if (transport.driver !== "outbox" && (await mailBlockedByFreeTier(1))) throw new Error("free plan mail quota reached: not sent");
   const sent = await transport.send({ from: getEnv().MAIL_FROM, to, ...mail, kind: "passwordReset", locale });
   // Never log the link itself: it is a password reset token.
   if (transport.driver === "outbox")

@@ -30,6 +30,15 @@ Chỉ người dùng chạy, trên máy của mình. Claude không chạy các l
 
 Phát hành bản mới có đổi database: áp migration **trước** khi deploy code mới; vì vậy migration nên chỉ thêm (bảng, cột cho phép trống hoặc có giá trị mặc định) để code cũ vẫn chạy được trong lúc chờ (đề xuất của Claude, PENDING).
 
+### Cấp quyền Admin trên web thật (bước 7.7, DECISIONS #55)
+
+Chỉ người dùng chạy, cùng file `.env.production-db` ở bước 1 phía trên.
+
+1. Mở web thật, đăng ký tài khoản bằng giao diện (`/vi/register`). Lệnh không tạo tài khoản.
+2. `npm run db:prod:grant -- <email>`: lệnh đọc tài khoản trước (không ghi) và dừng nếu email không có, hoặc tài khoản đang bị khoá, hoặc đã là Admin. Nếu cần ghi, lệnh hỏi gõ đúng mã endpoint Neon (`ep-long-sun-…`) rồi mới đổi vai trò.
+3. Thu quyền: `npm run db:prod:revoke -- <email>` (cùng cách hỏi). Tài khoản về `USER` và `sessionVersion` tăng: mọi phiên đang đăng nhập của tài khoản bị đăng xuất.
+4. Các lệnh này từ chối khi database chưa ở migration mới nhất (chạy `db:prod:migrate` trước) và chỉ ghi một dòng `User`; không dùng cho tài khoản chưa đăng ký.
+
 ## 3. Chạy bản build trên máy
 
 - `npm run build` rồi `AUTH_TRUST_HOST=true npx next start -p 3000`.
@@ -115,6 +124,35 @@ Cài từ đầu:
 6. `npm run preview:setup` (migrate + seed; nếu báo "DatabaseNotReachable" ngay sau khi tạo nhánh Neon thì chờ một lát và chạy lại: chạy lại bao nhiêu lần cũng được), rồi `npm run preview:check` (8 bước ✔, gồm CORS).
 7. Đẩy một commit lên `main` (kể cả `git commit --allow-empty`): Vercel build bản **Preview** (nhãn Preview ở tab Deployments, trạng thái Ready). Mỗi lần đẩy lên `main` là một lần build lại. Đăng ký tài khoản trên bản thử rồi `npm run preview:grant -- <email>` để có Admin.
 
-- Bản thử không gửi email (`MAIL_DRIVER=outbox` ghi vào `/tmp`, mất khi hàm kết thúc): không thử "Quên mật khẩu"; việc định kỳ (`/api/cron/*`, đơn quá hạn, dọn file) chưa được lên lịch ở bản thử.
+- Bản thử không gửi email (`MAIL_DRIVER=outbox` ghi vào `/tmp`, mất khi hàm kết thúc): không thử "Quên mật khẩu"; việc định kỳ (`/api/cron/*`, đơn quá hạn, dọn file) không chạy ở bản thử: Vercel chỉ chạy lịch (`vercel.json`) ở bản production (§9).
 - Ảnh demo và file demo nằm ở bucket của bản thử; muốn dựng lại từ đầu: `npm run preview:setup` (seed tạo lại 10 bộ demo; không đụng bộ thật khác).
 - Khi làm 7.7: dự án Vercel có thể dùng chung; nhánh `production`, biến môi trường cho môi trường Production (bucket + token + nhánh Neon production riêng, `APP_ENV` / `VERCEL_ENV` = production, cổng thanh toán thật, email thật, `CRON_SECRET`), tên miền `asset2d.id.vn`; xem `docs/ROADMAP.md`.
+
+## 9. Chạy thật (bước 7.7)
+
+Lựa chọn: DECISIONS #55 (chuẩn bị trước phần không cần tài khoản; ảnh xem trước của web thật qua tên miền riêng, không dùng r2.dev; bản thử giữ mở). Phần đã chuẩn bị: lệnh cấp quyền Admin production (§2), lịch việc định kỳ (`vercel.json`), lệnh kiểm cấu hình `prod:init` / `prod:check`. Còn lại là các việc cần tài khoản và quyết định của bạn: bảng dưới, rồi quy trình.
+
+**Việc của bạn (cần tài khoản hoặc quyết định):**
+
+| # | Việc | Ghi chú |
+|---|---|---|
+| 1 | Tên miền `asset2d.id.vn` | Đưa vào Cloudflare (DNS). Dùng cho 2 việc: web (gắn vào dự án Vercel) và ảnh (`media.asset2d.id.vn` gắn vào bucket ảnh R2: Cloudflare → R2 → bucket → Settings → Custom Domains). |
+| 2 | Nhánh Neon `production` | Có sẵn. Chuỗi **pooled** (có `-pooler`) → `DATABASE_URL` của Vercel; chuỗi **direct** chỉ nằm trong `.env.production-db` lúc chạy `db:prod:*`. |
+| 3 | R2 của web thật | 2 bucket `asset-game-prod-public` / `asset-game-prod-private`, token riêng chỉ cho 2 bucket đó, CORS `AllowedOrigins` = địa chỉ web thật ở cả 2 bucket (như §7). |
+| 4 | SePay thật | Tài khoản SePay nối với tài khoản ngân hàng nhận tiền; `SEPAY_MODE=live`, `SEPAY_WEBHOOK_SECRET`, `SEPAY_BANK_ACCOUNT`, `SEPAY_BANK_NAME`, `SEPAY_ACCOUNT_NAME`; webhook trỏ tới `https://<web thật>/api/payments/sepay/webhook`, ký HMAC (#45). |
+| 5 | Dịch vụ email thật | **Bạn chọn: Resend hay SMTP.** Code hiện chỉ có `MAIL_DRIVER=outbox` (ghi file), bị cấm ở production; chọn xong, Claude làm phần gửi thư. `prod:check` báo đến khi có. |
+| 6 | Gói Vercel | Hobby chỉ cho dùng phi thương mại và việc định kỳ chạy tối đa 1 lần / ngày; bán thật thì chọn Vercel Pro hoặc VPS (hỏi bạn khi tới lúc, #53 PENDING). |
+
+**Quy trình khi đã có đủ:**
+
+1. `npm run prod:init` tạo `.env.vercel-production` (file đã có thì không ghi đè). Điền các dòng còn trống; không gửi file này qua chat.
+2. `npm run prod:check` lặp lại cho tới khi hết dòng ✖ (mỗi dòng là một việc cần làm); rồi `npm run prod:check -- --storage` để thử 2 bucket thật.
+3. Database: `npm run db:prod:status` → `db:prod:migrate` → `db:prod:reference` (§2); **không** seed dữ liệu demo lên production.
+4. Vercel → Settings → Environment Variables: dán nội dung `.env.vercel-production`, **chỉ chọn môi trường Production**. Settings → Domains: thêm tên miền của web. `APP_URL` phải đúng địa chỉ khách dùng.
+5. Đẩy code lên nhánh `production` (`git push origin main:production`): Vercel build bản **Production** (nhãn Production ở tab Deployments). Ứng dụng từ chối khởi động nếu còn cổng Demo, r2.dev, email `outbox` hoặc `CRON_SECRET` ngắn (`backend/src/env.ts`).
+6. Việc định kỳ: `vercel.json` lên lịch `/api/cron/reconcile` (19:00 UTC, tức 2:00 sáng giờ Việt Nam) và `/api/cron/cleanup` (19:30 UTC, 2:30 sáng), mỗi ngày một lần (giới hạn của gói Hobby). Vercel chỉ chạy lịch ở bản Production và gửi `Authorization: Bearer <CRON_SECRET>`; sai `CRON_SECRET` thì hai route trả lỗi. Xem kết quả ở Vercel → Logs.
+7. Đăng ký tài khoản trên web thật rồi `npm run db:prod:grant -- <email>` (§2).
+8. Thử một đơn thật số tiền nhỏ qua SePay (webhook về đúng địa chỉ, đơn thành PAID, tải được file); thử thư đặt lại mật khẩu; mở `robots.txt` (production được cho công cụ tìm kiếm).
+9. Xoá `.env.production-db` khi xong. Đổi mọi khoá đã từng dán vào khung chat (dev, bản thử).
+
+**Chống tốn tiền khi bản thử mở link công khai:** Google không thấy bản thử (`robots.txt`); đã có giới hạn số lần thử theo IP (bước 7.1). Nếu bị spam: reset nhánh Neon `preview` rồi `npm run preview:setup`; hoặc bật lại Vercel Authentication (khi đó người xem phải có quyền với dự án).

@@ -118,7 +118,7 @@ Lưu ý:
 - Vai trò được đọc lại từ database ở mỗi lần truy cập, nên cấp hoặc thu có hiệu lực ngay, không cần đăng nhập lại khi cấp.
 - **Thu quyền** tăng `sessionVersion` của tài khoản, nên mọi phiên đang đăng nhập bị đăng xuất.
 - Trên **bản thử Vercel**, dùng `npm run preview:grant -- <email>` và `npm run preview:revoke -- <email>` (đọc `.env.preview`, không đọc `.env.local`).
-- Trên **production**: không có lệnh tự động. Tài khoản Admin production cấp qua quy trình riêng (chưa làm, xem `docs/ROADMAP.md`).
+- Trên **web chạy thật (production)**: tài khoản đăng ký trên web thật trước, rồi **bạn tự chạy** `npm run db:prod:grant -- <email>` (hoặc `db:prod:revoke`). Lệnh đọc chuỗi kết nối từ `.env.production-db`, chỉ ghi vào database có trong `PRODUCTION_DATABASE_HOSTS` và hỏi bạn gõ đúng mã endpoint Neon trước khi ghi (`docs/OPERATIONS.md` §2).
 
 Sau khi được cấp quyền, vào **/vi/admin** để quản lý bộ asset, đơn hàng, người dùng, mã giảm giá và nhật ký.
 
@@ -189,9 +189,10 @@ Chạy từ thư mục gốc. Bảng đầy đủ kèm giải thích: `CLAUDE.md
 | Việc định kỳ | `npm run cron:run` (hoặc `-- reconcile` / `-- cleanup`) | Chạy tay các việc định kỳ |
 | R2 | `npm run storage:check` / `storage:push` | Kiểm và chép file lên R2 |
 | Bản thử | `npm run preview:init` / `setup` / `check` / `grant` / `revoke` | Xem mục 7 |
+| Web thật | `npm run prod:init` / `prod:check` | Tạo và kiểm `.env.vercel-production` trước khi chạy thật (`docs/OPERATIONS.md` §9) |
 | Thư | `npm run mail:preview` | Ghi thư mẫu ra thư mục để xem |
 
-Các lệnh `db:prod:*` chỉ dùng cho production và do người dùng tự chạy (mục 11).
+Các lệnh `db:prod:*` (`status`, `migrate`, `reference`, `grant`, `revoke`) chỉ dùng cho production và do người dùng tự chạy (mục 11).
 
 ## 9. Kiểm thử
 
@@ -222,6 +223,6 @@ npm run build && npm run test:e2e   # E2E, cần build trước
 
 - **Không commit** `.env*` (trừ `.env.example`), `.storage/`, `.mail-outbox/`, `.backup/`. `.gitignore` đã chặn, đừng bỏ chặn.
 - **Không dán** khoá, mật khẩu, chuỗi kết nối hay secret vào chat, issue hay commit. Nếu lỡ dán, đổi ngay.
-- **Không chạy migrate hoặc seed trên production.** Chỉ dùng `db:*` (có chốt chặn). Migration production do người dùng tự chạy qua `npm run db:prod:status | db:prod:migrate | db:prod:reference`, cần nhập xác nhận (`docs/OPERATIONS.md` §2).
+- **Không chạy migrate hoặc seed trên production.** Chỉ dùng `db:*` (có chốt chặn). Migration production do người dùng tự chạy qua `npm run db:prod:status | db:prod:migrate | db:prod:reference` (cấp quyền Admin: `db:prod:grant | db:prod:revoke`), cần nhập xác nhận (`docs/OPERATIONS.md` §2).
 - **File bán** không bao giờ nằm trong thư mục công khai hay bucket public. Không lưu link tải vào database hay cache.
 - **Không đổi quyết định đã xác nhận** trong `docs/DECISIONS.md` khi chưa hỏi người dùng.

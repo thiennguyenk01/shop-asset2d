@@ -44,7 +44,7 @@ Căn cứ dạng `#n` là số thứ tự trong bảng trạng thái của `docs
 | 5.6 Trang thanh toán | 511–524 | CURRENT + bổ sung | Hiện chỉ có Demo Payment, cấm ở production; cổng thật ở GĐ6 | #3 |
 | 5.7 Thư viện cá nhân | 525–538 | MỘT PHẦN SUPERSEDED | "Bundle đã sở hữu" bị thay (không còn Bundle); "Giấy phép sử dụng" → "Lợi ích" | #15, #23 |
 | 5.8 Tài khoản người dùng | 539–550 | CURRENT + bổ sung | "Quên mật khẩu" hoãn sang GĐ6; đã làm ở bước 6.2 (2026-11-20) | #26, #38 |
-| 5.9 Các trang bổ sung — About, FAQ, License & Terms, Privacy, Refund | 551–560 | NOT SCHEDULED | Vẫn là yêu cầu, chưa xếp giai đoạn. Nhóm "Pháp lý" chỉ bị bỏ **khỏi menu** | #20; ROADMAP |
+| 5.9 Các trang bổ sung — About, FAQ, License & Terms, Privacy, Refund | 551–560 | CURRENT (đã làm 2026-11-22) | Người dùng yêu cầu làm 2026-11-22: 5 trang (License & Terms gộp vào Điều khoản sử dụng; quyền dùng từng bộ là mục Lợi ích), link pháp lý dưới dòng bản quyền, không phải nhóm menu; nội dung mẫu chờ người dùng sửa | #20, #23, #57 |
 | 5.9 — Contact | 551–560 | MỘT PHẦN SUPERSEDED | Liên hệ là nút chat nổi (danh sách kênh), không phải mục menu | #20 |
 | 5.9 — 404 Not Found | 551–560 | CURRENT | — (đã có) | — |
 | 6. Câu mở đầu: "Xây dựng hệ thống quản trị để chủ website có thể quản lý hoạt động kinh doanh." | 563 | CURRENT | — (khu Admin riêng `/admin`, đang làm ở GĐ5) | #29; ROADMAP (bảng GĐ5) |

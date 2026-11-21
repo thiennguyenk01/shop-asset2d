@@ -1,0 +1,97 @@
+# Vận hành
+
+Môi trường, cơ sở dữ liệu, chạy và chia sẻ web, sao lưu. Không chứa giá trị bí mật: giá trị thật chỉ nằm trong `.env.local` trên máy người dùng.
+
+## 1. Biến môi trường và quy tắc an toàn
+
+- Quy tắc an toàn về biến môi trường, secret và lệnh `prisma`: xem `CLAUDE.md` (khối "Bất khả xâm phạm" và dòng "Biến môi trường" ngay dưới bảng lệnh). Không chép lại ở đây.
+- Danh sách biến (`.env.example`): `APP_ENV`, `APP_URL`, `DATABASE_URL`, `DIRECT_URL`, `PRODUCTION_DATABASE_HOSTS`, `AUTH_SECRET`, `PAYMENT_PROVIDER`, `STORAGE_DRIVER`, `STORAGE_LOCAL_ROOT`. Kiểm tra ở `backend/src/env.ts` (production bắt buộc `STORAGE_DRIVER=r2`; `PAYMENT_PROVIDER=demo` bị cấm khi `APP_ENV`/`VERCEL_ENV` = production).
+- Biến cho cổng MoMo (bước 6.4): `MOMO_ENDPOINT`, `MOMO_PARTNER_CODE`, `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`, chỉ cần khi `PAYMENT_PROVIDER=momo` (xem `.env.example`).
+- Biến cho cổng SePay (DECISIONS #45): `SEPAY_MODE` (`test` | `live`; production bắt buộc `live`), `SEPAY_WEBHOOK_SECRET` (khoá HMAC của webhook SePay), `SEPAY_BANK_ACCOUNT`, `SEPAY_BANK_NAME`, `SEPAY_ACCOUNT_NAME`; chỉ cần khi `PAYMENT_PROVIDER=sepay` (xem `.env.example`). Khoá chỉ nằm trong `.env.local`.
+- Biến cho Cloudflare R2 (bước 7.5, DECISIONS #53): `R2_ACCOUNT_ID` (32 ký tự hex), `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BUCKET`, `R2_PRIVATE_BUCKET` (2 bucket khác nhau), `R2_PUBLIC_BASE_URL` (địa chỉ `https://` của bucket ảnh: tên miền riêng; r2.dev chỉ ở dev); bắt buộc khi `STORAGE_DRIVER=r2`. Cách cài: §7.
+
+## 2. Neon (PostgreSQL)
+
+- Project `asset-game-mmorpg-2d` (AWS Singapore, Free plan, PostgreSQL 18). Nhánh `production` (mặc định) và nhánh `dev` (dùng khi phát triển, host `ep-wild-brook-ao7rgaie…`). Chi tiết lúc kết nối: `docs/PROGRESS.md`, GĐ0.
+- `DATABASE_URL` = **pooled** (host `-pooler`, `sslmode=verify-full`) dùng lúc chạy; `DIRECT_URL` = **direct** (`sslmode=require`) chỉ cho Prisma CLI / migrate (DECISIONS #10).
+- `PRODUCTION_DATABASE_HOSTS` = host nhánh `production` (`ep-long-sun-aowyt90y…`): guard của `db:*`, `admin:grant/revoke` và test tích hợp từ chối chạy trên các host này (cả direct lẫn pooled). Chuỗi kết nối production không bao giờ nằm trong `.env.local`; chỉ nằm trong `.env.production-db` lúc chạy `db:prod:*` (mục dưới; sửa ở bước 7.4, DECISIONS #44).
+
+### Đưa thay đổi database lên production (bước 7.4, DECISIONS #44)
+
+Chỉ người dùng chạy, trên máy của mình. Claude không chạy các lệnh này lên production.
+
+1. **Chuẩn bị:** Neon Console → nhánh `production` → Connect → chọn kết nối **không** pooled (host không có `-pooler`) → chép chuỗi kết nối. Tạo file `.env.production-db` ở thư mục dự án, một dòng: `DIRECT_URL=<chuỗi vừa chép>` (phải có `sslmode=require`). Không dán chuỗi này vào chat, không để trong `.env.local`.
+2. **Xem trạng thái (chỉ đọc):** `npm run db:prod:status`: số migration đã áp / chờ áp, các cảnh báo, rồi `prisma migrate status` (dòng `Datasource` phải là host `ep-long-sun-…`).
+3. **Sao lưu:** Neon Console → Branches → Create branch, lấy từ `production` (đặt tên kiểu `backup-<ngày>`). Có sự cố thì khôi phục từ nhánh này.
+4. **Áp migration:** `npm run db:prod:migrate` → đọc danh sách, gõ đúng mã endpoint (`ep-long-sun-…`) khi được hỏi. Migration có lệnh có thể mất dữ liệu (DROP / TRUNCATE / DELETE / đổi kiểu cột) bị chặn trên database đang dùng: đọc kỹ file SQL, nếu chắc chắn thì `npm run db:prod:migrate -- --allow-destructive`. Database còn trống (lần đầu) thì không cần cờ này.
+5. **Dữ liệu danh mục** (lần đầu, và mỗi khi danh mục / Lợi ích đổi): `npm run db:prod:reference` → gõ mã endpoint. Chỉ ghi / cập nhật 21 danh mục, thể loại, phong cách, Lợi ích; không tạo bộ demo, mã giảm giá thử hay file.
+6. **Kiểm tra:** `npm run db:prod:status` lần nữa (chờ áp 0).
+7. **Dọn:** xoá file `.env.production-db`.
+
+Phát hành bản mới có đổi database: áp migration **trước** khi deploy code mới; vì vậy migration nên chỉ thêm (bảng, cột cho phép trống hoặc có giá trị mặc định) để code cũ vẫn chạy được trong lúc chờ (đề xuất của Claude, PENDING).
+
+## 3. Chạy bản build trên máy
+
+- `npm run build` rồi `AUTH_TRUST_HOST=true npx next start -p 3000`.
+- `next start` ngoài Vercel cần `AUTH_TRUST_HOST=true` (Playwright đã đặt trong `webServer.env`).
+- Chạy E2E: Playwright tự khởi động `next start` riêng (`reuseExistingServer: false`) → phải dừng server đang chiếm cổng 3000 trước.
+
+## 4. Chia sẻ web cho người khác dùng thử (trước GĐ7)
+
+Cách người dùng đã chọn ngày 2026-11-14 (ghi trong memory của Claude; trạng thái quyết định: REVIEW ở `docs/DECISIONS.md`): **Cloudflare quick tunnel** từ máy người dùng.
+
+1. Dừng dev server (cùng cổng 3000).
+2. `npm run build` → `AUTH_TRUST_HOST=true npx next start -p 3000` (chạy nền).
+3. `"C:\Program Files (x86)\cloudflared\cloudflared.exe" tunnel --no-autoupdate --url http://localhost:3000` → link `https://<ngẫu nhiên>.trycloudflare.com` in trong output.
+4. Thử qua link công khai (đăng ký + thêm vào giỏ) trước khi gửi link.
+
+Link đổi mỗi lần chạy; mất khi máy ngủ hoặc tắt tiến trình. Dùng nhánh Neon **dev**.
+
+**Thử cổng MoMo trên môi trường thử (bước 6.4, DECISIONS #41; MoMo tạm dừng từ 2026-11-20 theo #42, chỉ dùng khi bật lại):** MoMo gửi kết quả thanh toán về `/api/payments/momo/webhook`, nên phải mở web qua link tunnel ở trên (MoMo không gọi được tới localhost).
+
+1. Trong `.env.local`: `PAYMENT_PROVIDER=momo` và 4 biến `MOMO_*`. Khoá thử lấy từ MoMo: tài khoản doanh nghiệp, hoặc bộ khoá mẫu công khai trong `php/PayMoMo/query_transaction.php` của repo github.com/momo-wallet/payment.
+2. Làm các bước 1–3 ở trên. Địa chỉ tunnel được lấy từ request, không cần sửa `APP_URL`.
+3. Trả tiền cần **app MoMo bản thử nghiệm** và ví thử; app MoMo thật báo lỗi 1005 với đơn của môi trường thử (2026-11-20).
+4. Thử xong đổi lại `PAYMENT_PROVIDER=demo` (test tự động chạy bằng cổng Demo).
+
+**Thử cổng SePay trên máy bằng SePay CLI (DECISIONS #45; Test mode, không có tiền thật):** không cần tunnel: CLI nhận thông báo của SePay rồi chuyển về localhost, giữ nguyên nội dung và chữ ký.
+
+1. Cài và đăng nhập (một lần): `npm install -g sepay-cli`, `sepay login` (mở trình duyệt; nhập mã hiện trong cửa sổ lệnh, phím `y` chép mã).
+2. Tài khoản ngân hàng thử: `sepay sandbox init` (không cần tài khoản ảo, không tạo webhook, không tạo giao dịch mẫu) → `sepay bank-account list` lấy số tài khoản và mã ở cột `ID`.
+3. Ghi khoá HMAC tự đặt (chỉ chữ và số, từ 16 ký tự) vào `SEPAY_WEBHOOK_SECRET` trong `.env.local`, rồi tạo webhook chỉ nhận qua CLI bằng chính khoá đó, đưa qua ống lệnh để khoá không hiện trên màn hình, không vào lịch sử lệnh: `(Select-String -Path .env.local -Pattern '^SEPAY_WEBHOOK_SECRET=(.+)$').Matches[0].Groups[1].Value.Trim() | sepay webhook create --listen-only --bank-mode single --bank-account <ID> --event-type in --auth-type hmac --name <tên> --secret -`. Chỉ để một webhook đang bật (`sepay webhook list`).
+4. `.env.local`: `PAYMENT_PROVIDER=sepay`, `SEPAY_MODE=test`, `SEPAY_BANK_ACCOUNT`, `SEPAY_BANK_NAME` (ví dụ `ACB`), `SEPAY_ACCOUNT_NAME`; khởi động lại `npm run dev`.
+5. Mở một cửa sổ riêng, để chạy: `sepay webhook listen --forward localhost:3000/api/payments/sepay/webhook`.
+6. Đặt đơn trên web, rồi giả lập chuyển khoản: `sepay sandbox simulate payment_in --bank-account <ID> --amount <số tiền> --override "content=<nội dung chuyển khoản>"` (cờ `--code` chỉ nhận 10 ký tự, mã đơn dài 16), hoặc my.sepay.vn → Test mode → Giả lập giao dịch. Cửa sổ `listen` phải báo `200`; trang đơn tự chuyển sang Đã thanh toán.
+7. Xem giao dịch: `sepay transaction list`, `sepay webhook logs --since 1h`. Số dư của tài khoản thử ACB luôn 0 (ở Test mode SePay chỉ cộng số dư với vài kiểu kết nối); giao dịch vẫn được ghi.
+8. Thử xong đổi lại `PAYMENT_PROVIDER=demo` trước khi chạy test tự động (test tích hợp và E2E dùng cổng Demo).
+
+`listen` gửi lại một giao dịch thì giữ dấu thời gian cũ: sau 5 phút web từ chối (đúng thiết kế, chống gửi lại). Trước khi chạy thật nên thử một lần qua URL công khai (đề xuất của Claude, PENDING).
+
+## 5. Sao lưu tài liệu
+
+- Repo chưa dùng git. Trước khi tái cấu trúc tài liệu (2026-11-15) đã sao lưu `CLAUDE.md` và `DESIGN.md` vào `.backup/docs-2026-11-15/` (`*.bak` + `MANIFEST.txt` có SHA-256). **Chỉ xóa bản sao lưu khi người dùng cho phép.**
+- `docs/requirements/ORIGINAL-BRIEF.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md` nằm trong `.prettierignore` để `npm run format` không định dạng lại nội dung nguyên văn.
+
+## 6. Việc vận hành chờ người dùng
+
+Xem `docs/ROADMAP.md` mục "Việc chờ người dùng".
+
+## 7. Cloudflare R2 (lưu file, bước 7.5)
+
+Lựa chọn: DECISIONS #53 (ảnh xem trước qua tên miền riêng; r2.dev chỉ để thử). Kỹ thuật: `docs/ARCHITECTURE.md` §5 (ghi chú bước 7.5). Khoá chỉ nằm trong `.env.local` (dev) hoặc biến môi trường của Vercel (7.6–7.7); không dán vào chat.
+
+**Dev hiện tại (2026-11-21):** bucket `asset-game-dev-public` (ảnh, đang dùng địa chỉ r2.dev) và `asset-game-dev-private` (file bán); `.env.local` đặt `STORAGE_DRIVER=r2`. File cũ ở `.storage/` đã chép lên (381 file, 11.7 MB); `.storage/` vẫn giữ, đổi lại `STORAGE_DRIVER=local` là quay về như trước.
+
+Cài một môi trường (dev; production làm lại với bucket và token riêng):
+
+1. **Tạo 2 bucket** (R2 Object Storage → Create bucket): một cho ảnh xem trước, một cho file bán. Location: Automatic.
+2. **Bucket ảnh → Settings:** Custom Domains → Connect (tên miền phải nằm trong cùng tài khoản Cloudflare). Chưa có tên miền thì Public Development URL → Enable để thử (r2.dev bị Cloudflare giới hạn tốc độ; production từ chối). **Bucket file bán không bật truy cập công khai nào.**
+3. **CORS cho cả 2 bucket** (Settings → CORS Policy → JSON): `[{ "AllowedOrigins": ["http://localhost:3000", "http://localhost:3100"], "AllowedMethods": ["PUT"], "AllowedHeaders": ["Content-Type", "Cache-Control"], "MaxAgeSeconds": 3600 }]`. Cổng `3000` là dev, `3100` là E2E; production chỉ ghi địa chỉ thật của web. Đổi CORS cần khoảng 30 giây mới có hiệu lực.
+4. **API token** (R2 → Manage API Tokens → Create): quyền **Object Read & Write**, chỉ cho 2 bucket trên. Token này không đọc / sửa được cấu hình bucket (CORS, tên miền): việc đó làm trên trang Cloudflare.
+5. **`.env.local`:** 6 biến R2 ở §1; giữ `STORAGE_DRIVER=local`.
+6. `npm run storage:check` → cả 8 bước ✔ (bước lỗi có gợi ý cách sửa).
+7. `npm run storage:push -- --dry-run`, rồi `npm run storage:push` (chép file đang có ở `.storage/`; chạy lại bao nhiêu lần cũng được).
+8. Đổi `STORAGE_DRIVER=r2`, khởi động lại `npm run dev`; mở Cửa hàng: địa chỉ ảnh bắt đầu bằng `R2_PUBLIC_BASE_URL`.
+
+- Mỗi lần chạy E2E tải vài file thử lên bucket dev; `npm run cron:run -- cleanup` xoá file không còn dòng nào trỏ tới sau 24 giờ.
+- Tên miền sắp có (người dùng, 2026-11-21): `asset2d.id.vn`. Đề xuất của Claude (PENDING): thêm tên miền vào Cloudflare (đổi nameserver ở nơi mua), gắn `media.asset2d.id.vn` vào bucket ảnh rồi đổi `R2_PUBLIC_BASE_URL`; bản ghi trỏ web sang Vercel để DNS only.

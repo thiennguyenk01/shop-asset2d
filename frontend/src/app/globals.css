@@ -1,0 +1,230 @@
+@import "tailwindcss";
+
+/* Sidebar collapsed state lives on <html data-sidebar="collapsed"> (set by layout/sidebar-toggle.tsx and an
+   inline script before first paint), so server components can style it with `sidebar-collapsed:` and there
+   is no flash on reload. */
+@custom-variant sidebar-collapsed (html[data-sidebar="collapsed"] &);
+
+/* Light theme lives on <html data-theme="light"> (layout/theme-toggle.tsx + inline script before first paint). */
+@custom-variant light (html[data-theme="light"] &);
+
+/*
+ * Design tokens — Asset Game MMORPG 2D (CLAUDE.md §9).
+ * Kept in this file on purpose: with the Turbopack Tailwind loader an @import-ed file
+ * containing @theme is compiled separately and its tokens never reach Tailwind.
+ * Palette: vàng kim (gold), đen huyền (ink), nâu cổ (bronze), đỏ son (cinnabar),
+ * xanh ngọc (jade), trắng ngà (ivory). Dark, premium, restrained.
+ *
+ * Contrast notes (on --color-ink-950):
+ *   ivory-100 ≈ 16:1 · ivory-300 ≈ 11:1 · ivory-500 ≈ 6:1 · gold-400 ≈ 9:1 · jade-400 ≈ 7:1
+ *   cinnabar is for fills (seals, badges) with ivory text, not for text on dark.
+ */
+@theme {
+  /* Ink — đen huyền */
+  --color-ink-950: #0b0908;
+  --color-ink-900: #13100d;
+  --color-ink-850: #1a1511;
+  --color-ink-800: #221b15;
+
+  /* Bronze — nâu cổ */
+  --color-bronze-700: #3b2a1a;
+  --color-bronze-600: #574026;
+  --color-bronze-500: #7a5a35;
+
+  /* Gold — vàng kim */
+  --color-gold-600: #a8851c;
+  --color-gold-500: #c9a227;
+  --color-gold-400: #ddb94a;
+  --color-gold-300: #ecd48a;
+
+  /* Cinnabar — đỏ son */
+  --color-cinnabar-700: #8a1f17;
+  --color-cinnabar-600: #a8281f;
+  --color-cinnabar-500: #c23a2c;
+
+  /* Jade — xanh ngọc */
+  --color-jade-700: #17524a;
+  --color-jade-600: #1f6b5c;
+  --color-jade-500: #2f8a75;
+  --color-jade-400: #4fb39b;
+
+  /* Ivory — trắng ngà */
+  --color-ivory-100: #f3ead8;
+  --color-ivory-300: #d9ccb2;
+  --color-ivory-500: #a89a80;
+
+  /* Fixed in both themes: text on coloured fills. paper = on jade / cinnabar / seals; soot = on gold. */
+  --color-paper: #f7f1e3;
+  --color-soot: #0b0908;
+
+  /* Charts (Admin statistics, GĐ5.7): real money = gold, Demo money = jade. Checked with the dataviz palette
+     validator against the card surface (ink-900) — lightness band, chroma, colour-blind separation, contrast. */
+  --color-chart-real: #b08505;
+  --color-chart-demo: #1f9b82;
+
+  /* Typography (variables are injected by next/font — see frontend/src/styles/fonts.ts) */
+  /* Han glyphs (zh) fall through to the CJK fonts listed after the Latin/Vietnamese font. */
+  --font-display: var(--font-charm), var(--font-ma-shan-zheng-text), serif;
+  --font-heading: var(--font-noto-serif-display), "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", Georgia, serif;
+  --font-sans: var(--font-be-vietnam-pro), "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "Source Han Sans SC", system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-han: var(--font-ma-shan-zheng), serif;
+
+  /* Effects */
+  --shadow-glow: 0 0 0 1px rgb(201 162 39 / 0.35), 0 8px 32px -8px rgb(201 162 39 / 0.25);
+  --shadow-panel: 0 1px 0 0 rgb(236 212 138 / 0.06) inset, 0 12px 40px -16px rgb(0 0 0 / 0.8);
+
+  --animate-qi-float: qi-float 8s ease-in-out infinite;
+
+  @keyframes qi-float {
+    0%,
+    100% {
+      transform: translateY(0);
+      opacity: 0.55;
+    }
+    50% {
+      transform: translateY(-10px);
+      opacity: 0.9;
+    }
+  }
+}
+
+
+/*
+ * Light theme (user request 2026-11-14, palette from their sample): the same token names get light values,
+ * so every component keeps its classes. Roles stay the same — ink = surfaces, ivory = text, bronze = lines,
+ * gold = accent. Contrast (on the #F5F0E5 page): ivory-100 ≈ 12:1 · ivory-300 ≈ 8:1 · ivory-500 ≈ 5:1 ·
+ * gold-300 ≈ 4.7:1 (text) · jade-400 ≈ 4.6:1. Gold fills keep soot text.
+ */
+@layer base {
+  html[data-theme="light"] {
+    color-scheme: light;
+    --color-ink-950: #f5f0e5; /* nền — trắng ngà */
+    --color-ink-900: #eae1d0; /* sidebar, thẻ — kem nhạt */
+    --color-ink-850: #fbf8f1; /* lớp nổi */
+    --color-ink-800: #dfd3bc;
+    --color-bronze-700: #d9cbb2; /* viền */
+    --color-bronze-600: #bfaa86;
+    --color-bronze-500: #9a7d52;
+    --color-gold-600: #96711f;
+    --color-gold-500: #b58a35; /* vàng cổ */
+    --color-gold-400: #a67c2e;
+    --color-gold-300: #8a6420;
+    --color-jade-400: #1f7a64;
+    --color-chart-real: #9a6500;
+    --color-chart-demo: #008064;
+    --color-ivory-100: #352b20; /* chữ — nâu mực */
+    --color-ivory-300: #54473a;
+    --color-ivory-500: #6e5d49;
+    --shadow-panel: 0 1px 0 0 rgb(255 255 255 / 0.6) inset, 0 12px 32px -16px rgb(53 43 32 / 0.3);
+  }
+
+  html {
+    color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-ink-950);
+    color: var(--color-ivory-100);
+    font-family: var(--font-sans);
+    /* Subtle "linh khí" glow + faint cloud-pattern texture; kept very low contrast for readability. */
+    background-image:
+      radial-gradient(60rem 30rem at 50% -10rem, rgb(201 162 39 / 0.10), transparent 70%),
+      radial-gradient(40rem 24rem at 100% 30%, rgb(47 138 117 / 0.06), transparent 70%);
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold-400);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: rgb(201 162 39 / 0.35);
+    color: var(--color-ivory-100);
+  }
+}
+
+@layer utilities {
+  /* HD pixel art must stay crisp: never smooth when scaled (CLAUDE.md §9). */
+  .pixelated {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+
+  .text-gold-gradient {
+    background: linear-gradient(180deg, var(--color-gold-300), var(--color-gold-500) 60%, var(--color-gold-600));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Horizontal scrollers (e.g. the pack section bottom nav): scrollable, no visible scrollbar. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Height of the mobile bottom tab bar (layout/mobile-tabbar.tsx). 0 on desktop, where the sidebar is used.
+   <main> is padded by it; fixed bottom bars (product section nav, toasts) sit above it. */
+:root {
+  --tabbar-h: calc(4rem + env(safe-area-inset-bottom));
+}
+@media (min-width: 64rem) {
+  :root {
+    --tabbar-h: 0px;
+  }
+}
+
+/* ===== Thanh cuộn tự ẩn (evondevKit ui-ux, luật I18 / luật khoá 13) =====
+   Trong suốt khi đứng yên, giữ bề rộng 4px; rê vào thì hiện mờ. Màu theo chữ ngà của dự án.
+   Không thêm `transition` vào rule `*` (sẽ đè mọi utility transition của Tailwind v4). */
+* { --scrollbar-thumb: transparent; }
+*:hover { --scrollbar-thumb: color-mix(in srgb, var(--color-ivory-100) 16%, transparent); }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--color-ivory-100) 40%, transparent); }
+@supports not selector(::-webkit-scrollbar) {
+  * { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+  *:hover { scrollbar-color: color-mix(in srgb, var(--color-ivory-100) 18%, transparent) transparent; }
+}
+
+/* ===== Chuyển động lớp nổi (dropdown, popover) — overlay.md "Chuyển động" =====
+   Radix chờ @keyframes (không chờ transition). Vào 150ms ease-out: mờ + scale 95→100 + dịch 4px từ phía nút;
+   ra 100ms ease-in: mờ + scale 95, không dịch. Giảm chuyển động: chỉ còn mờ. */
+@keyframes overlay-in-down { from { opacity: 0; scale: 0.95; translate: 0 -4px; } }
+@keyframes overlay-in-up { from { opacity: 0; scale: 0.95; translate: 0 4px; } }
+@keyframes overlay-out { to { opacity: 0; scale: 0.95; } }
+@keyframes overlay-fade-out { to { opacity: 0; } }
+@utility animate-overlay {
+  transform-origin: var(--radix-dropdown-menu-content-transform-origin, var(--radix-popover-content-transform-origin, top));
+  &[data-state="open"][data-side="bottom"] { animation: overlay-in-down 150ms ease-out; }
+  &[data-state="open"][data-side="top"] { animation: overlay-in-up 150ms ease-out; }
+  &[data-state="closed"] { animation: overlay-out 100ms ease-in forwards; }
+  @media (prefers-reduced-motion: reduce) {
+    &[data-state="open"] { animation: none; }
+    &[data-state="closed"] { animation: overlay-fade-out 100ms ease-in forwards; }
+  }
+}

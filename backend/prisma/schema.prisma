@@ -1,0 +1,844 @@
+// Asset Game MMORPG 2D — Prisma schema (CLAUDE.md §4).
+//
+// Kết nối: xem prisma.config.ts (DIRECT_URL cho CLI/migrate) và
+// backend/src/db.ts (DATABASE_URL pooled qua @prisma/adapter-pg lúc chạy).
+//
+// Quy ước:
+// - Tiền là số nguyên VND (Int), không dùng float.
+// - Nội dung hiển thị nằm trong bảng *Translation (một dòng cho mỗi Locale).
+// - Ràng buộc mà Prisma không biểu diễn được (CHECK, unique một phần) nằm trong
+//   SQL của migration — xem backend/prisma/migrations/*_catalog/migration.sql.
+// - Sản phẩm đã bán/đã cấp quyền không xoá được (onDelete: Restrict) → dùng status HIDDEN.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────────── Enums ─────────────────────────────
+
+enum Locale {
+  vi
+  en
+  zh
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  LOCKED
+}
+
+/// Each product is a complete A→Z game asset pack (CLAUDE.md §5). No bundles.
+enum ProductType {
+  FREE
+  PREMIUM
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+}
+
+enum MediaKind {
+  THUMBNAIL
+  IMAGE
+  GIF
+  VIDEO
+}
+
+enum CouponKind {
+  PERCENT
+  FIXED
+}
+
+/// What an order line sells: a whole pack, or more downloads of a free pack (CLAUDE.md §5, step 4.6).
+enum OrderItemKind {
+  PACK
+  EXTRA_DOWNLOADS
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
+enum PaymentProvider {
+  DEMO
+  PAYOS
+  VNPAY
+  MOMO
+  SEPAY
+  /// An order an Admin recorded by hand: the customer paid outside the site (user choice 2026-11-21).
+  MANUAL
+}
+
+/// Why a bank transfer settled nothing (UnmatchedTransfer).
+enum UnmatchedTransferReason {
+  /// No order code found in the transfer memo, or no order has that code.
+  NO_ORDER
+  /// The amount differs from the order total.
+  AMOUNT_MISMATCH
+  /// The order can no longer be paid (already paid, cancelled, failed or refunded).
+  ORDER_CLOSED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+enum RefundStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+enum EntitlementSource {
+  PURCHASE
+  FREE_CLAIM
+  ADMIN_GRANT
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ─────────────────────────── User & Auth ───────────────────────────
+
+model User {
+  id              String     @id @default(cuid())
+  email           String     @unique
+  passwordHash    String?
+  name            String?
+  role            UserRole   @default(USER)
+  status          UserStatus @default(ACTIVE)
+  preferredLocale Locale     @default(vi)
+  emailVerifiedAt DateTime?
+  /// Tăng mỗi khi đổi mật khẩu / khóa tài khoản → mọi JWT cũ mất hiệu lực (CLAUDE.md §13).
+  sessionVersion  Int        @default(0)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  accounts            Account[]
+  passwordResetTokens PasswordResetToken[]
+  cart                Cart?
+  orders              Order[]
+  entitlements        Entitlement[]
+  downloadCredits     DownloadCredit[]
+  downloadLogs        DownloadLog[]
+  reviews             Review[]
+  couponRedemptions   CouponRedemption[]
+  refundsHandled      Refund[]             @relation("RefundAdmin")
+  auditLogs           AuditLog[]
+  transfersResolved   UnmatchedTransfer[]  @relation("UnmatchedTransferResolver")
+}
+
+/// OAuth accounts (Auth.js adapter shape) — reserved for Google sign-in later.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  /// SHA-256 of the token; the raw token is only ever sent by email.
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ────────────────────── Categories & taxonomy ──────────────────────
+
+model Category {
+  id        String  @id @default(cuid())
+  /// Fixed slugs, see CLAUDE.md §10.
+  slug      String  @unique
+  sortOrder Int     @default(0)
+  bannerKey String?
+  iconKey   String?
+  isActive  Boolean @default(true)
+
+  translations CategoryTranslation[]
+  /// Categories are the sections inside each A→Z pack (not a product filter).
+  sections     ProductSection[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+model CategoryTranslation {
+  categoryId  String
+  locale      Locale
+  name        String
+  description String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([categoryId, locale])
+}
+
+model Genre {
+  id           String             @id @default(cuid())
+  slug         String             @unique
+  sortOrder    Int                @default(0)
+  translations GenreTranslation[]
+  products     ProductGenre[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GenreTranslation {
+  genreId String
+  locale  Locale
+  name    String
+  genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([genreId, locale])
+}
+
+model ArtStyle {
+  id           String                @id @default(cuid())
+  slug         String                @unique
+  sortOrder    Int                   @default(0)
+  translations ArtStyleTranslation[]
+  products     ProductArtStyle[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ArtStyleTranslation {
+  artStyleId String
+  locale     Locale
+  name       String
+  artStyle   ArtStyle @relation(fields: [artStyleId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([artStyleId, locale])
+}
+
+model ProductGenre {
+  productId String
+  genreId   String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  genre     Genre   @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([productId, genreId])
+  @@index([genreId])
+}
+
+model ProductArtStyle {
+  productId  String
+  artStyleId String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  artStyle   ArtStyle @relation(fields: [artStyleId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([productId, artStyleId])
+  @@index([artStyleId])
+}
+
+// ───────────────────────────── Products ─────────────────────────────
+
+model Product {
+  id                 String        @id @default(cuid())
+  slug               String        @unique
+  type               ProductType
+  status             ProductStatus @default(DRAFT)
+  /// 0 for FREE products (enforced by a CHECK constraint).
+  priceVnd           Int
+  /// Optional "was" price shown struck through (sale price).
+  compareAtPriceVnd  Int?
+  isFeatured         Boolean       @default(false)
+  /// Seeded sample data — must be labelled "Demo" in the UI (CLAUDE.md §11).
+  isDemoData         Boolean       @default(false)
+  /// Sum of ProductSection.assetCount (denormalized for cards and sorting).
+  assetCount         Int           @default(0)
+  resolution         String?
+  fileFormats        String[]
+  compatibleSoftware String[]
+  salesCount         Int           @default(0)
+  downloadCount      Int           @default(0)
+  claimCount         Int           @default(0)
+  ratingAvg          Float         @default(0)
+  ratingCount        Int           @default(0)
+  currentVersionId   String?       @unique
+  publishedAt        DateTime?
+
+  currentVersion  ProductVersion?      @relation("CurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  translations    ProductTranslation[]
+  media           ProductMedia[]
+  versions        ProductVersion[]     @relation("ProductVersions")
+  licenses        ProductLicense[]
+  sections        ProductSection[]
+  genres          ProductGenre[]
+  artStyles       ProductArtStyle[]
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
+  entitlements    Entitlement[]
+  downloadCredits DownloadCredit[]
+  downloadLogs    DownloadLog[]
+  reviews         Review[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, type, publishedAt])
+  @@index([status, salesCount])
+  @@index([status, priceVnd])
+  @@index([status, isFeatured])
+}
+
+model ProductTranslation {
+  productId        String
+  locale           Locale
+  title            String
+  shortDescription String
+  description      String
+  /// Bullet list of what the pack contains.
+  contentsList     String[]
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([productId, locale])
+}
+
+model ProductMedia {
+  id            String          @id @default(cuid())
+  productId     String
+  kind          MediaKind
+  /// Key in the PUBLIC media bucket.
+  storageKey    String
+  mimeType      String
+  width         Int?
+  height        Int?
+  sortOrder     Int             @default(0)
+  /// Temporary illustration — always rendered with a "Demo" overlay (CLAUDE.md §11).
+  isPlaceholder Boolean         @default(false)
+  /// null = pack overview gallery; set = preview of one section of the pack.
+  sectionId     String?
+  product       Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  section       ProductSection? @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, sortOrder])
+  @@index([sectionId, sortOrder])
+}
+
+/// One category (Nhân vật, Bản đồ, Quái vật…) inside an A→Z pack. Sold only as part of the pack.
+model ProductSection {
+  id          String   @id @default(cuid())
+  productId   String
+  categoryId  String
+  sortOrder   Int      @default(0)
+  assetCount  Int      @default(0)
+  resolution  String?
+  fileFormats String[]
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  translations ProductSectionTranslation[]
+  media        ProductMedia[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, categoryId])
+  @@index([categoryId])
+}
+
+model ProductSectionTranslation {
+  sectionId    String
+  locale       Locale
+  summary      String
+  /// Bullet list of what this section contains.
+  contentsList String[]
+  section      ProductSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([sectionId, locale])
+}
+
+model ProductVersion {
+  id         String        @id @default(cuid())
+  productId  String
+  version    String
+  /// { "vi": "...", "en": "...", "zh": "..." }
+  changelog  Json?
+  /// null = draft version (files can still change); set when it goes live (first publish of the pack, or "Release").
+  releasedAt DateTime?
+  product    Product       @relation("ProductVersions", fields: [productId], references: [id], onDelete: Cascade)
+  currentOf  Product?      @relation("CurrentVersion")
+  files      ProductFile[]
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, version])
+}
+
+model ProductFile {
+  id           String         @id @default(cuid())
+  versionId    String
+  /// Key in the PRIVATE assets bucket — never publicly addressable (CLAUDE.md §7).
+  storageKey   String         @unique
+  filename     String
+  sizeBytes    Int
+  sha256       String
+  mimeType     String
+  version      ProductVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  downloadLogs DownloadLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([versionId])
+}
+
+// ───────────────────────────── Licenses ─────────────────────────────
+
+model License {
+  id                  String  @id @default(cuid())
+  code                String  @unique
+  allowCommercial     Boolean
+  allowModification   Boolean
+  allowMultiProject   Boolean
+  allowRedistribution Boolean
+  allowResale         Boolean
+  isActive            Boolean @default(true)
+  sortOrder           Int     @default(0)
+
+  translations LicenseTranslation[]
+  products     ProductLicense[]
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+  entitlements Entitlement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LicenseTranslation {
+  licenseId String
+  locale    Locale
+  name      String
+  summary   String
+  terms     String
+  license   License @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([licenseId, locale])
+}
+
+/// Phase 1: exactly one row per product with isDefault = true (partial unique index in SQL).
+model ProductLicense {
+  productId String
+  licenseId String
+  /// null = use Product.priceVnd. Reserved for per-license pricing later.
+  priceVnd  Int?
+  isDefault Boolean @default(false)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  license   License @relation(fields: [licenseId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([productId, licenseId])
+  @@index([licenseId])
+}
+
+// ─────────────────────────── Cart & coupons ───────────────────────────
+
+model Cart {
+  id         String     @id @default(cuid())
+  userId     String?    @unique
+  /// Random token stored in an httpOnly cookie for guests.
+  guestToken String?    @unique
+  user       User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items      CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CartItem {
+  id        String  @id @default(cuid())
+  cartId    String
+  productId String
+  licenseId String
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  license   License @relation(fields: [licenseId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId])
+}
+
+model Coupon {
+  id             String             @id @default(cuid())
+  code           String             @unique
+  kind           CouponKind
+  /// PERCENT: 1–100 · FIXED: amount in VND.
+  value          Int
+  minTotalVnd    Int                @default(0)
+  startsAt       DateTime?
+  endsAt         DateTime?
+  maxUses        Int?
+  /// Uses per account (paid orders + unexpired pending ones); null = no limit (DECISIONS #35).
+  maxUsesPerUser Int?
+  usedCount      Int                @default(0)
+  isActive       Boolean            @default(true)
+  orders         Order[]
+  redemptions    CouponRedemption[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Shop settings the Admin edits (step 5.6, DECISIONS #35). One row (id = 1); no row = the defaults in
+/// backend/src/lib/download/rules.ts. Orders keep the count and price they were created with (OrderItem snapshot).
+model ShopSettings {
+  id                     Int @id @default(1)
+  /// "Buy more downloads" for a free pack: downloads added per purchase, and its price in VND.
+  extraDownloadsCount    Int
+  extraDownloadsPriceVnd Int
+
+  updatedAt DateTime @updatedAt
+}
+
+model CouponRedemption {
+  id       String @id @default(cuid())
+  couponId String
+  orderId  String @unique
+  userId   String
+  coupon   Coupon @relation(fields: [couponId], references: [id], onDelete: Restrict)
+  order    Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user     User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([couponId])
+  @@index([userId])
+}
+
+// ───────────────────────── Orders & payments ─────────────────────────
+
+model Order {
+  id          String      @id @default(cuid())
+  /// Human-readable code shown to customers, e.g. AG-20261114-7F3K.
+  code        String      @unique
+  userId      String
+  status      OrderStatus @default(PENDING)
+  subtotalVnd Int
+  discountVnd Int         @default(0)
+  totalVnd    Int
+  couponId    String?
+  buyerName   String
+  buyerEmail  String
+  locale      Locale
+  /// Created through the Demo payment provider — never a real transaction.
+  isDemo      Boolean     @default(false)
+  paidAt      DateTime?
+  expiresAt   DateTime?
+
+  user         User              @relation(fields: [userId], references: [id], onDelete: Restrict)
+  coupon       Coupon?           @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  items        OrderItem[]
+  payments     Payment[]
+  refunds      Refund[]
+  redemption   CouponRedemption?
+  entitlements Entitlement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  id               String          @id @default(cuid())
+  orderId          String
+  productId        String
+  productType      ProductType
+  kind             OrderItemKind   @default(PACK)
+  /// EXTRA_DOWNLOADS only: how many downloads this line adds (null for a pack).
+  extraDownloads   Int?
+  titleSnapshot    String
+  priceSnapshotVnd Int
+  licenseId        String
+  /// License name + permission flags at purchase time.
+  licenseSnapshot  Json
+  versionId        String?
+  order            Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product          Product         @relation(fields: [productId], references: [id], onDelete: Restrict)
+  license          License         @relation(fields: [licenseId], references: [id], onDelete: Restrict)
+  version          ProductVersion? @relation(fields: [versionId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([orderId, productId])
+  @@index([productId])
+}
+
+model Payment {
+  id            String          @id @default(cuid())
+  orderId       String
+  provider      PaymentProvider
+  providerTxnId String?
+  amountVnd     Int
+  status        PaymentStatus   @default(PENDING)
+  rawPayload    Json?
+  order         Order           @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerTxnId])
+  @@index([orderId])
+}
+
+/// A bank transfer reported by the gateway (SePay, user choice 2026-11-20) that settled nothing: no order code in
+/// the memo, a wrong amount, or an order that can no longer be paid. It never grants anything: an Admin looks at
+/// the list and handles it by hand (contact the buyer, refund outside the site).
+model UnmatchedTransfer {
+  id             String                  @id @default(cuid())
+  provider       PaymentProvider
+  /// The gateway's transaction id (SePay `id`): one row per transfer, replays change nothing.
+  externalId     String
+  reason         UnmatchedTransferReason
+  amountVnd      Int
+  /// The transfer memo as the bank wrote it.
+  content        String
+  /// The order code found in the memo, if any.
+  orderCode      String?
+  bankAccount    String
+  /// Reported by the gateway's test mode (SePay Test mode): no real money moved.
+  isDemo         Boolean                 @default(false)
+  /// When the bank booked the transfer (gateway time), if given.
+  transferredAt  DateTime?
+  payload        Json
+  resolvedAt     DateTime?
+  /// The Admin who marked it handled (with a note on what was done).
+  resolvedById   String?
+  resolutionNote String?
+  resolvedBy     User?                   @relation("UnmatchedTransferResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, externalId])
+  @@index([resolvedAt, createdAt])
+}
+
+/// Every webhook is recorded once; the unique key makes processing idempotent.
+model WebhookEvent {
+  id          String          @id @default(cuid())
+  provider    PaymentProvider
+  eventId     String
+  payload     Json
+  processedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, eventId])
+}
+
+model Refund {
+  id        String       @id @default(cuid())
+  orderId   String
+  amountVnd Int
+  reason    String
+  status    RefundStatus @default(REQUESTED)
+  adminId   String
+  order     Order        @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  admin     User         @relation("RefundAdmin", fields: [adminId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+}
+
+// ───────────────── Ownership & downloads (security core) ─────────────────
+
+model Entitlement {
+  id        String            @id @default(cuid())
+  userId    String
+  productId String
+  licenseId String
+  source    EntitlementSource
+  orderId   String?
+  grantedAt DateTime          @default(now())
+  /// Set on refund / admin revoke. A revoked entitlement grants nothing.
+  revokedAt DateTime?
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product           @relation(fields: [productId], references: [id], onDelete: Restrict)
+  license   License           @relation(fields: [licenseId], references: [id], onDelete: Restrict)
+  order     Order?            @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@index([orderId])
+}
+
+/// Extra downloads of a FREE pack bought by a user (CLAUDE.md §5, step 4.6), on top of the free quota.
+/// Only the payment webhook adds to it (in the same transaction that marks the order PAID).
+model DownloadCredit {
+  userId         String
+  productId      String
+  extraDownloads Int     @default(0)
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product        Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, productId])
+  @@index([productId])
+}
+
+/// One row per download. `userId` null = a guest download of a FREE pack (allowed until step 4.5; since
+/// then every download needs an account). The rows of a user + pack are its used free downloads.
+model DownloadLog {
+  id        String       @id @default(cuid())
+  userId    String?
+  productId String
+  fileId    String?
+  /// Salted SHA-256 of the client IP (never the raw address) — used for the guest download limit.
+  ip        String?
+  userAgent String?
+  user      User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  file      ProductFile? @relation(fields: [fileId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId, createdAt])
+  @@index([userId, createdAt])
+  @@index([ip, createdAt])
+}
+
+// ─────────────────────────────── Other ───────────────────────────────
+
+model Review {
+  id              String       @id @default(cuid())
+  userId          String
+  productId       String
+  /// 1–5 (CHECK constraint).
+  rating          Int
+  body            String
+  locale          Locale
+  status          ReviewStatus @default(PENDING)
+  isVerifiedOwner Boolean      @default(false)
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product         Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([productId, status])
+}
+
+model AuditLog {
+  id       String @id @default(cuid())
+  adminId  String
+  action   String
+  entity   String
+  entityId String
+  diff     Json?
+  admin    User   @relation(fields: [adminId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([entity, entityId])
+  @@index([adminId, createdAt])
+}
+
+/// Failed-attempt counters (GĐ7.1): sign-in and coupon tries, shared by every server instance (serverless keeps
+/// no memory between calls). key = "<scope>:<sha256 of the subject>" — never a raw email or IP. Fixed window:
+/// the count starts again at 1 once windowStart is older than the scope's window (backend/src/lib/rate-limit/rules.ts).
+/// Old rows are removed by the cleanup job.
+model RateLimit {
+  key         String   @id
+  count       Int
+  windowStart DateTime
+}

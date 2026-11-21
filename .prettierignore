@@ -1,0 +1,10 @@
+node_modules
+**/.next
+backend/src/generated
+.storage
+.mail-outbox
+package-lock.json
+# Verbatim documents: never reformat (byte-for-byte copies / logs)
+docs/requirements/ORIGINAL-BRIEF.md
+docs/PROGRESS.md
+docs/DECISIONS.md

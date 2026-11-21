@@ -1,0 +1,3 @@
+# Keep every file byte for byte as it is in the working tree (no line-ending conversion):
+# Prisma checksums migration.sql, docs/*.md are CRLF and the messages JSON is LF on purpose.
+* -text

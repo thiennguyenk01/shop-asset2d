@@ -5,12 +5,14 @@
  *   npm run db:prod:status                         read only: applied / pending / failed migrations
  *   npm run db:prod:migrate [-- --allow-destructive]  apply pending migrations (`prisma migrate deploy`)
  *   npm run db:prod:reference                      upsert categories, genres, styles, "Lợi ích" rows
+ *   npm run db:prod:grant -- <email>               make an account registered on the live site an Admin (GĐ7.7)
+ *   npm run db:prod:revoke -- <email>              take Admin away (also signs out every session of that account)
  *
  * - Reads the connection string ONLY from `.env.production-db` (DIRECT_URL, filled in by the user; never in
  *   chat, never committed — .gitignore covers `.env*`). `.env.local` is read for nothing but
  *   PRODUCTION_DATABASE_HOSTS. `--env-file=<path>` points to another file (used to rehearse on a dev branch).
  * - The target must be listed in PRODUCTION_DATABASE_HOSTS, direct (not -pooler), with sslmode=require.
- * - migrate / reference ask the user to type the Neon endpoint id ("ep-…") before writing anything.
+ * - migrate / reference / grant / revoke ask the user to type the Neon endpoint id ("ep-…") before writing anything.
  * - Never `migrate dev`, never `migrate reset`, never the demo seed (no demo packs, no test coupons, no files).
  * Rules: backend/scripts/db-prod-rules.ts. Procedure: docs/OPERATIONS.md.
  */
@@ -22,9 +24,11 @@ import { parse } from "dotenv";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { upsertReferenceData, REFERENCE_COUNTS } from "../prisma/seed/reference";
+import { applyAdminRole, planAdminRole } from "./admin-role";
 import { checkProdTarget, confirmationMatches, endpointId, planMigration, PROD_ENV_FILE, type MigrationRow } from "./db-prod-rules";
 
-type Command = "status" | "migrate" | "reference";
+type Command = "status" | "migrate" | "reference" | "grant" | "revoke";
+const COMMANDS: readonly Command[] = ["status", "migrate", "reference", "grant", "revoke"];
 const MIGRATIONS_DIR = "backend/prisma/migrations";
 
 function fail(message: string, code = 1): never {
@@ -81,9 +85,11 @@ async function confirm(host: string, what: string): Promise<void> {
 async function main() {
   const args = process.argv.slice(2);
   const command = args[0] as Command | undefined;
-  if (command !== "status" && command !== "migrate" && command !== "reference") {
-    fail("Cách dùng: npm run db:prod:status | db:prod:migrate [-- --allow-destructive] | db:prod:reference", 2);
+  if (!command || !COMMANDS.includes(command)) {
+    fail("Cách dùng: npm run db:prod:status | db:prod:migrate [-- --allow-destructive] | db:prod:reference | db:prod:grant -- <email> | db:prod:revoke -- <email>", 2);
   }
+  const email = args.slice(1).find((a) => !a.startsWith("--"));
+  if ((command === "grant" || command === "revoke") && !email) fail(`Cách dùng: npm run db:prod:${command} -- <email>`, 2);
   const envFile = args.find((a) => a.startsWith("--env-file="))?.slice("--env-file=".length) ?? PROD_ENV_FILE;
   if (!existsSync(envFile)) fail(`Không có file ${envFile}. Tạo file đó và tự điền DIRECT_URL của nhánh production (xem docs/OPERATIONS.md).`);
   const prodEnv = readEnvFile(envFile);
@@ -125,8 +131,19 @@ async function main() {
       return;
     }
 
-    // reference
     if (plan.pending.length > 0 || plan.blockers.length > 0) fail("Database chưa ở migration mới nhất: chạy db:prod:migrate trước.");
+
+    if (command === "grant" || command === "revoke") {
+      // Read first (no write), then the typed confirmation, then the one update.
+      const role = await planAdminRole(db, email!, command);
+      if (role.kind === "error") fail(role.message);
+      if (role.kind === "noop") return void console.log(`• ${role.message}`);
+      await confirm(host, command === "grant" ? `Cấp quyền Admin cho ${role.email}` : `Bỏ quyền Admin của ${role.email}`);
+      console.log(`✔ ${await applyAdminRole(db, role)}`);
+      return;
+    }
+
+    // reference
     await confirm(host, `Ghi dữ liệu danh mục (${REFERENCE_COUNTS.categories} danh mục, ${REFERENCE_COUNTS.genres} thể loại, ${REFERENCE_COUNTS.styles} phong cách, ${REFERENCE_COUNTS.licenses} dòng Lợi ích; không xoá gì)`);
     await upsertReferenceData(db);
     console.log("✔ Đã ghi dữ liệu danh mục.");

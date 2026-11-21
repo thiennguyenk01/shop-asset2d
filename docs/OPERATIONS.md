@@ -140,7 +140,7 @@ Lựa chọn: DECISIONS #55 (chuẩn bị trước phần không cần tài kho�
 | 2 | Nhánh Neon `production` | Có sẵn. Chuỗi **pooled** (có `-pooler`) → `DATABASE_URL` của Vercel; chuỗi **direct** chỉ nằm trong `.env.production-db` lúc chạy `db:prod:*`. |
 | 3 | R2 của web thật | 2 bucket `asset-game-prod-public` / `asset-game-prod-private`, token riêng chỉ cho 2 bucket đó, CORS `AllowedOrigins` = địa chỉ web thật ở cả 2 bucket (như §7). |
 | 4 | SePay thật | Tài khoản SePay nối với tài khoản ngân hàng nhận tiền; `SEPAY_MODE=live`, `SEPAY_WEBHOOK_SECRET`, `SEPAY_BANK_ACCOUNT`, `SEPAY_BANK_NAME`, `SEPAY_ACCOUNT_NAME`; webhook trỏ tới `https://<web thật>/api/payments/sepay/webhook`, ký HMAC (#45). |
-| 5 | Dịch vụ email thật | **Bạn chọn: Resend hay SMTP.** Code hiện chỉ có `MAIL_DRIVER=outbox` (ghi file), bị cấm ở production; chọn xong, Claude làm phần gửi thư. `prod:check` báo đến khi có. |
+| 5 | Email thật: Resend (#56) | Code đã có. Tài khoản resend.com; **Domains → Add Domain** `asset2d.id.vn`, thêm các bản ghi DNS Resend đưa ra vào Cloudflare, chờ Verified; **API Keys → Create API Key** (Sending access). Trong `.env.vercel-production`: `MAIL_DRIVER=resend`, `MAIL_FROM=Asset Game MMORPG 2D <no-reply@asset2d.id.vn>`, `RESEND_API_KEY=re_…` (file tạo từ mẫu trước 2026-11-22 chưa có dòng này: tự thêm). Thử: `npm run mail:test -- <email> --env-file=.env.vercel-production`. Trước khi xác minh tên miền vẫn thử được với khoá trong `.env.local`: thư đi từ `onboarding@resend.dev` và chỉ tới email của tài khoản Resend. Gói miễn phí: 3.000 thư / tháng, 100 thư / ngày. |
 | 6 | Gói Vercel | Hobby chỉ cho dùng phi thương mại và việc định kỳ chạy tối đa 1 lần / ngày; bán thật thì chọn Vercel Pro hoặc VPS (hỏi bạn khi tới lúc, #53 PENDING). |
 
 **Quy trình khi đã có đủ:**

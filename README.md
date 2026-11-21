@@ -71,7 +71,7 @@ Kiểm tra cấu hình khi khởi động: nếu thiếu hoặc sai, web từ ch
 | `PAYMENT_PROVIDER` | `demo` (mặc định), `sepay`, `momo` | `demo` không nhận tiền thật và **bị cấm ở production**. |
 | `STORAGE_DRIVER` | `local` (mặc định trên máy) hoặc `r2` | `r2` là bắt buộc ở production. |
 | `STORAGE_LOCAL_ROOT` | Thư mục file khi dùng `local`, mặc định `.storage` | Nằm ngoài `public/`, không bao giờ commit. |
-| `MAIL_DRIVER` | `outbox` (ghi file, chỉ dùng ở máy) | Production cần dịch vụ gửi thật. |
+| `MAIL_DRIVER` | `outbox` (ghi file, chỉ dùng ở máy) hoặc `resend` (gửi thật qua Resend, cần `RESEND_API_KEY`) | Production bắt buộc `resend`, và `MAIL_FROM` phải thuộc tên miền của cửa hàng (đã xác minh ở Resend). |
 | `MAIL_OUTBOX_DIR` | Thư mục thư ghi ra, mặc định `.mail-outbox` | |
 | `CRON_SECRET` | Khoá bảo vệ các việc định kỳ `/api/cron/*`, tối thiểu 32 ký tự | Trên máy chạy tay bằng `npm run cron:run`. |
 
@@ -191,6 +191,7 @@ Chạy từ thư mục gốc. Bảng đầy đủ kèm giải thích: `CLAUDE.md
 | Bản thử | `npm run preview:init` / `setup` / `check` / `grant` / `revoke` | Xem mục 7 |
 | Web thật | `npm run prod:init` / `prod:check` | Tạo và kiểm `.env.vercel-production` trước khi chạy thật (`docs/OPERATIONS.md` §9) |
 | Thư | `npm run mail:preview` | Ghi thư mẫu ra thư mục để xem |
+| | `npm run mail:test -- <email>` | Gửi 1 thư mẫu thật qua Resend (cần `RESEND_API_KEY`) |
 
 Các lệnh `db:prod:*` (`status`, `migrate`, `reference`, `grant`, `revoke`) chỉ dùng cho production và do người dùng tự chạy (mục 11).
 

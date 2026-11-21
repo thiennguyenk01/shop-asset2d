@@ -155,4 +155,4 @@ Lựa chọn: DECISIONS #55 (chuẩn bị trước phần không cần tài kho�
 8. Thử một đơn thật số tiền nhỏ qua SePay (webhook về đúng địa chỉ, đơn thành PAID, tải được file); thử thư đặt lại mật khẩu; mở `robots.txt` (production được cho công cụ tìm kiếm).
 9. Xoá `.env.production-db` khi xong. Đổi mọi khoá đã từng dán vào khung chat (dev, bản thử).
 
-**Chống tốn tiền khi bản thử mở link công khai:** Google không thấy bản thử (`robots.txt`); đã có giới hạn số lần thử theo IP (bước 7.1). Nếu bị spam: reset nhánh Neon `preview` rồi `npm run preview:setup`; hoặc bật lại Vercel Authentication (khi đó người xem phải có quyền với dự án).
+**Chống tốn tiền khi bản thử mở link công khai:** Google không thấy bản thử (`robots.txt`); đã có giới hạn số lần thử theo IP (bước 7.1). Nếu bị spam: reset nhánh Neon `preview` rồi `npm run preview:setup`; hoặc bật lại Vercel Authentication (khi đó người xem phải có quyền với dự án). Theo dõi phần đã dùng của gói miễn phí: **Quản trị → Dung lượng** (#58; đo môi trường đang mở: nhánh Neon và 2 bucket của nó; Neon và R2 tính gói miễn phí chung cho mọi nhánh / bucket, nên xem thêm trang quản lý của Neon và Cloudflare).

@@ -225,7 +225,20 @@ async function CheckoutContent({ locale }: { locale: Locale }) {
           </p>
         )}
         <PlaceOrderForm action={placeOrderAction.bind(null, locale)} totalVnd={summary.totalVnd} />
-        <p className="text-xs text-pretty text-ivory-500">{t("agree")}</p>
+        <p className="text-xs text-pretty text-ivory-500">
+          {t.rich("agree", {
+            terms: (c) => (
+              <Link href="/terms" className="text-ivory-300 underline underline-offset-4 hover:text-ivory-100">
+                {c}
+              </Link>
+            ),
+            refund: (c) => (
+              <Link href="/refund" className="text-ivory-300 underline underline-offset-4 hover:text-ivory-100">
+                {c}
+              </Link>
+            ),
+          })}
+        </p>
       </aside>
     </div>
   );

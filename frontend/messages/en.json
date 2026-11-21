@@ -40,7 +40,11 @@
     "faq": "FAQ",
     "checkout": "Checkout",
     "stats": "Statistics",
-    "orders": "Orders"
+    "orders": "Orders",
+    "terms": "Terms of use",
+    "privacy": "Privacy policy",
+    "refund": "Refund policy",
+    "legalLabel": "Legal information"
   },
   "header": {
     "cart": "Cart",
@@ -85,7 +89,8 @@
       "submitting": "Creating account…",
       "success": "Account created and signed in.",
       "haveAccount": "Already have an account?",
-      "loginLink": "Sign in"
+      "loginLink": "Sign in",
+      "agree": "By creating an account you agree to the <terms>Terms of use</terms> and the <privacy>Privacy policy</privacy>."
     },
     "forgot": {
       "title": "Forgot your password",
@@ -494,7 +499,7 @@
     "summaryTitle": "Order",
     "confirm": "Place order",
     "placing": "Creating order…",
-    "agree": "By placing the order you agree to use the packs within their benefits and not to share, redistribute or resell the original files.",
+    "agree": "By placing the order you agree to use the packs within their benefits and not to share, redistribute or resell the original files (<terms>Terms of use</terms>, <refund>Refund policy</refund>).",
     "emptyTitle": "Nothing to pay for",
     "emptyText": "Your cart has no packs left to pay for.",
     "errors": {
@@ -1505,6 +1510,208 @@
       "expiry": "The link is valid for {minutes} minutes and can be used only once.",
       "linkHint": "If the button does not work, copy this link into your browser:",
       "ignore": "If you did not ask to reset your password, ignore this message. Your password stays the same."
+    }
+  },
+  "info": {
+    "draftNotice": "Sample text, not an official document yet: the shop owner will review it and adjust it to the real situation before selling for real.",
+    "about": {
+      "metaDescription": "Asset Game MMORPG 2D: a marketplace of Eastern-style HD Pixel Art graphics for 2D games.",
+      "intro": "Asset Game MMORPG 2D sells and shares HD Pixel Art graphics packs for Eastern-style 2D games: xianxia, wuxia, xuanhuan, Eastern mythology and dark fantasy.",
+      "sections": {
+        "what": {
+          "title": "What we do",
+          "body": "Every product is a complete pack from A to Z: characters, maps, monsters, skills, interface, items… organised into clear sections within one pack. You can preview each section on the pack page before you download or buy."
+        },
+        "who": {
+          "title": "Who it is for",
+          "body": "- Independent game developers and small studios.\n- Makers of 2D MMORPG and RPG games.\n- People building games with AI tools who need assets in one consistent style."
+        },
+        "model": {
+          "title": "Free and Premium",
+          "body": "Free packs can be downloaded once you sign in: each account gets 2 downloads per pack and can buy more.\n\nPremium packs are sold one by one. There is no membership or subscription. Once bought, a pack stays in your Library and can be downloaded again whenever you need it."
+        },
+        "rights": {
+          "title": "Usage rights",
+          "body": "Each pack lists its Benefits on the pack page: what you may do with that pack. The part common to all packs is on the Terms of use page."
+        },
+        "contact": {
+          "title": "Contact",
+          "body": "Tap the chat button in the bottom-right corner to choose a contact channel."
+        }
+      }
+    },
+    "faq": {
+      "metaDescription": "Frequently asked questions about accounts, Free packs, buying Premium packs, asset usage and refunds.",
+      "intro": "Short answers to common questions. Can't find yours? Tap the chat button in the bottom-right corner.",
+      "groups": {
+        "account": {
+          "title": "Account",
+          "items": {
+            "need": {
+              "q": "Do I need an account?",
+              "a": "Not to browse the shop. You need to sign in to download Free packs, buy Premium packs and use the Library, so the packs are saved to your account."
+            },
+            "forgot": {
+              "q": "I forgot my password. What now?",
+              "a": "Tap \"Forgot password?\" on the sign-in page and enter your email. A reset link is sent to that address and works for 30 minutes. If you can't find it, check your Spam folder."
+            }
+          }
+        },
+        "free": {
+          "title": "Free packs",
+          "items": {
+            "count": {
+              "q": "How many times can I download a Free pack?",
+              "a": "Each account can download each Free pack 2 times. The first download adds the pack to your Library; when the downloads are used up, the pack stays in your Library."
+            },
+            "more": {
+              "q": "What if I run out of downloads?",
+              "a": "Buy more downloads for that pack, right on the pack page or in your Library. The number of downloads and the price are shown there."
+            }
+          }
+        },
+        "premium": {
+          "title": "Buying Premium packs",
+          "items": {
+            "pay": {
+              "q": "How do I pay?",
+              "a": "By bank transfer with the VietQR code shown at checkout, using the order code as the transfer message. The payment is confirmed automatically when the money arrives, usually within a few minutes."
+            },
+            "ttl": {
+              "q": "How long is an unpaid order kept?",
+              "a": "30 minutes. After that the order expires; if you still want the pack, place a new order."
+            },
+            "download": {
+              "q": "Where do I download what I bought, and how often?",
+              "a": "Bought packs are in your Library. You can download them again as often as you like; each download uses a link that only works for a short time."
+            },
+            "coupon": {
+              "q": "Where do I use a coupon code?",
+              "a": "Enter it on the Cart page before checkout. Prices and the total are always recalculated when the order is placed."
+            }
+          }
+        },
+        "usage": {
+          "title": "Using the assets",
+          "items": {
+            "commercial": {
+              "q": "Can I use the assets in a commercial game?",
+              "a": "See the Benefits section on each pack's page: it says exactly what you may do with that pack. The common rules are on the Terms of use page."
+            },
+            "share": {
+              "q": "May I share or resell the files?",
+              "a": "No. You may not share, redistribute or resell a pack's original files, even modified, unless the pack's Benefits clearly allow it."
+            },
+            "update": {
+              "q": "What happens when a pack is updated?",
+              "a": "New versions of packs you own appear in your Library; download the latest version there."
+            }
+          }
+        },
+        "refund": {
+          "title": "Refunds",
+          "items": {
+            "when": {
+              "q": "Can I get a refund?",
+              "a": "See the Refund policy page. When an order is refunded, the pack is removed from your Library and can no longer be downloaded."
+            }
+          }
+        }
+      }
+    },
+    "terms": {
+      "metaDescription": "Terms of use of Asset Game MMORPG 2D: accounts, digital products, payment, asset usage rights and downloads.",
+      "intro": "These terms apply when you use Asset Game MMORPG 2D: browsing, downloading and buying packs, and using your account.",
+      "sections": {
+        "account": {
+          "title": "Account",
+          "body": "- You keep your own email and password safe; actions on an account are treated as the account owner's.\n- The shop may lock accounts that break these terms, for example by sharing files again or using automated download tools.\n- When the password changes or the account is locked, every earlier sign-in session stops working."
+        },
+        "products": {
+          "title": "Digital products",
+          "body": "Every product is a digital asset pack, sold only as a whole. The previews and details on the pack page describe what the pack contains. Packs marked DEMO are sample data, not real products."
+        },
+        "payment": {
+          "title": "Prices and payment",
+          "body": "Prices are shown in Vietnamese dong. Prices, coupons and the total are recalculated when the order is placed. Premium packs can only be downloaded after the payment is confirmed."
+        },
+        "rights": {
+          "title": "Usage rights",
+          "body": "The usage rights of each pack are in the Benefits section of its page. Buying one pack gives you no rights to other packs.\n\nIn every case you may not share, redistribute or resell a pack's original files unless the pack's Benefits clearly allow it."
+        },
+        "downloads": {
+          "title": "Downloads",
+          "body": "- Free packs: 2 downloads per pack per account; more can be bought.\n- Bought Premium packs: unlimited downloads.\n- To stop automated downloading, each account can download at most 100 times per hour."
+        },
+        "refund": {
+          "title": "Refunds",
+          "body": "As described on the Refund policy page."
+        },
+        "changes": {
+          "title": "Changes to these terms",
+          "body": "The shop may update these terms; the new version is published on this page."
+        },
+        "contact": {
+          "title": "Contact",
+          "body": "Tap the chat button in the bottom-right corner."
+        }
+      }
+    },
+    "privacy": {
+      "metaDescription": "Privacy policy of Asset Game MMORPG 2D: what data is kept, what it is used for, cookies and where the data is stored.",
+      "intro": "This page explains what data the shop keeps about you, what it is used for and where it is stored.",
+      "sections": {
+        "collect": {
+          "title": "Data we keep",
+          "body": "- Account: email, display name (if any) and password. The password is only stored as a hash; nobody can read the original.\n- Orders: the packs bought, amount, order code, time and payment status.\n- Download history: which pack was downloaded and when.\n- Carts of signed-out visitors: deleted after 30 days without changes.\n- Abuse protection: failed sign-ins and coupon attempts per IP address, stored only as a hash and deleted after 24 hours."
+        },
+        "notCollected": {
+          "title": "Data we do not keep",
+          "body": "The shop does not store card numbers or bank login details. Payment is by bank transfer: the shop only receives a notice that the money arrived, with the amount and the transfer message."
+        },
+        "use": {
+          "title": "What it is used for",
+          "body": "- Signing in, keeping your Library and letting you download bought packs again.\n- Confirming payments and handling refunds.\n- Sending necessary emails, such as password reset links. No marketing emails.\n- Preventing fraud and automated downloading."
+        },
+        "cookies": {
+          "title": "Cookies and browser storage",
+          "body": "- The sign-in session cookie.\n- The cart cookie of signed-out visitors.\n- The language you chose.\n- Light / dark theme and the collapsed menu state (stored in your browser).\n\nNo advertising cookies or third-party trackers are used."
+        },
+        "where": {
+          "title": "Where the data is stored",
+          "body": "- Web hosting: Vercel.\n- Database: Neon (PostgreSQL).\n- Files and images: Cloudflare R2.\n- Email: Resend.\n- Bank transfer notices: SePay."
+        },
+        "rights": {
+          "title": "Your rights",
+          "body": "You can view and edit your account details on the Account page. To delete your account and data, contact us through the chat button in the bottom-right corner; order records may have to be kept under accounting rules."
+        }
+      }
+    },
+    "refund": {
+      "metaDescription": "Refund policy of Asset Game MMORPG 2D: when a refund is possible, the deadline and how to ask.",
+      "intro": "Packs are digital products that can be downloaded right away, so refund requests are considered in the cases below.",
+      "sections": {
+        "yes": {
+          "title": "When you can get a refund",
+          "body": "- You paid but could not download the pack because of a fault on the shop's side, and the shop could not fix it.\n- The pack's files are broken or clearly different from the description on the pack page.\n- You paid twice for the same pack."
+        },
+        "no": {
+          "title": "When there is no refund",
+          "body": "- You downloaded the pack, it matches the description, and you no longer need it.\n- You bought by mistake but already downloaded the pack.\n- Orders of 0 ₫ (paid in full with a coupon)."
+        },
+        "deadline": {
+          "title": "Deadline",
+          "body": "Send your request within 7 days of payment."
+        },
+        "how": {
+          "title": "How to ask",
+          "body": "Tap the chat button in the bottom-right corner and send the order code (AG-…) and the reason. The shop will reply as soon as possible."
+        },
+        "after": {
+          "title": "After a refund",
+          "body": "The money is sent back to the bank account you paid from. The pack is removed from your Library and can no longer be downloaded; extra downloads bought in that order are removed too."
+        }
+      }
     }
   }
 }

@@ -6,9 +6,11 @@ import { useSearchParams } from "next/navigation";
 import { Dialog } from "radix-ui";
 import { useState } from "react";
 import { Link, usePathname } from "@backend/i18n/navigation";
+import { LEGAL_PAGES } from "@backend/lib/info-pages";
 import { CartBadge } from "@/components/cart/cart-count";
 import { cn } from "@/lib/cn";
 import { isNavActive, MORE_NAV, SUPPORT_NAV, TAB_NAV } from "./app-nav";
+import { LegalLinks } from "./legal-links";
 import { NavIcon } from "./nav-icon";
 import { SidebarNav } from "./sidebar-nav";
 
@@ -32,7 +34,8 @@ export function MobileTabbar({ copyright }: { copyright: string }) {
   const pathname = usePathname();
   const query = useSearchParams().toString();
   const [open, setOpen] = useState(false);
-  const moreActive = [...MORE_NAV, ...SUPPORT_NAV].some((i) => isNavActive(i.href, pathname, query));
+  const moreActive =
+    [...MORE_NAV, ...SUPPORT_NAV].some((i) => isNavActive(i.href, pathname, query)) || LEGAL_PAGES.some((p) => pathname === `/${p}`);
 
   return (
     <nav
@@ -86,7 +89,10 @@ export function MobileTabbar({ copyright }: { copyright: string }) {
                   <p className="flex h-10 items-center px-3 text-xs font-medium tracking-wide text-ivory-500 uppercase">{t("supportTitle")}</p>
                   <SidebarNav items={SUPPORT_NAV} onNavigate={() => setOpen(false)} />
                 </div>
-                <p className="px-3 text-xs text-ivory-500">{copyright}</p>
+                <div className="flex flex-col gap-1 px-3">
+                  <p className="text-xs text-ivory-500">{copyright}</p>
+                  <LegalLinks onNavigate={() => setOpen(false)} />
+                </div>
               </Dialog.Content>
             </Dialog.Portal>
           </Dialog.Root>

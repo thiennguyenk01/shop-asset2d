@@ -1,10 +1,11 @@
 import type { Metadata, MetadataRoute } from "next";
 import { HTML_LANG, routing, type Locale } from "@backend/i18n/routing";
+import { INFO_PAGES } from "@backend/lib/info-pages";
 
 /**
  * Search engines and link previews (GĐ7.3) — pure helpers, unit-tested.
  *
- * Indexable pages: the shop and each pack page, in every language the page exists in (a pack only exists in the
+ * Indexable pages: the shop, the information pages (About, FAQ, terms, privacy, refund) and each pack page, in every language the page exists in (a pack only exists in the
  * languages it is written in, DECISIONS #39). Everything private already says `noindex` itself.
  * Paths here are relative (`/vi/shop`): the root layout sets `metadataBase` from APP_URL; the sitemap, which
  * needs absolute URLs, passes the base explicitly.
@@ -101,7 +102,11 @@ export function sitemapEntries(appUrl: string, packs: { slug: string; locales: r
       url: base + localePath(l, path),
       alternates: { languages: languageAlternates(path, locales, base) },
     }));
-  return [...entry("/shop", routing.locales), ...packs.flatMap((p) => entry(`/product/${p.slug}`, p.locales))];
+  return [
+    ...entry("/shop", routing.locales),
+    ...INFO_PAGES.flatMap((p) => entry(`/${p}`, routing.locales)),
+    ...packs.flatMap((p) => entry(`/product/${p.slug}`, p.locales)),
+  ];
 }
 
 /** slug → the languages it is visible in, from one slug list per language. */

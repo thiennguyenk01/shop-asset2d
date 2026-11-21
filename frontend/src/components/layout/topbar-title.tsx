@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { ShopCrumbLink } from "@/components/shop/back-to-shop";
 import { usePathname } from "@backend/i18n/navigation";
+import { INFO_PAGES, type InfoPage } from "@backend/lib/info-pages";
 
 /**
  * Page title in the top bar (evondevKit shell.md "Đầu trang"): list pages have no in-content header, so
@@ -11,13 +12,14 @@ import { usePathname } from "@backend/i18n/navigation";
  * level as a link. One <h1> per page, one place for the title.
  */
 /** Pages whose name in the top bar is their <h1>. */
-const LIST_PAGES: Partial<Record<string, "account" | "stats" | "orders" | "cart" | "library" | "checkout">> = {
+const LIST_PAGES: Partial<Record<string, "account" | "stats" | "orders" | "cart" | "library" | "checkout" | InfoPage>> = {
   "/account": "account",
   "/stats": "stats",
   "/orders": "orders",
   "/cart": "cart",
   "/library": "library",
   "/checkout": "checkout",
+  ...Object.fromEntries(INFO_PAGES.map((p) => [`/${p}`, p])),
 };
 
 export function TopbarTitle() {
@@ -31,7 +33,8 @@ export function TopbarTitle() {
   const section = pathname.startsWith("/checkout/") ? "/checkout" : pathname.startsWith("/orders/") ? "/orders" : pathname;
   const listPage = LIST_PAGES[section];
   if (listPage) {
-    return <h1 className="truncate text-base leading-normal font-semibold text-ivory-100">{t(listPage)}</h1>;
+    // Long names ("Chính sách bảo mật") wrap to a second line on phones instead of losing their end to "…".
+    return <h1 className="line-clamp-2 text-base leading-snug font-semibold text-pretty text-ivory-100">{t(listPage)}</h1>;
   }
   if (pathname.startsWith("/product/")) {
     return (

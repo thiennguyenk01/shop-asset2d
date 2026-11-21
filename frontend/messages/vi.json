@@ -40,7 +40,11 @@
     "faq": "Câu hỏi thường gặp",
     "checkout": "Thanh toán",
     "stats": "Thống kê",
-    "orders": "Đơn hàng"
+    "orders": "Đơn hàng",
+    "terms": "Điều khoản sử dụng",
+    "privacy": "Chính sách bảo mật",
+    "refund": "Chính sách hoàn tiền",
+    "legalLabel": "Thông tin pháp lý"
   },
   "header": {
     "cart": "Giỏ hàng",
@@ -85,7 +89,8 @@
       "submitting": "Đang tạo tài khoản…",
       "success": "Đã tạo tài khoản và đăng nhập.",
       "haveAccount": "Đã có tài khoản?",
-      "loginLink": "Đăng nhập"
+      "loginLink": "Đăng nhập",
+      "agree": "Khi tạo tài khoản, bạn đồng ý với <terms>Điều khoản sử dụng</terms> và <privacy>Chính sách bảo mật</privacy>."
     },
     "forgot": {
       "title": "Quên mật khẩu",
@@ -494,7 +499,7 @@
     "summaryTitle": "Đơn hàng",
     "confirm": "Xác nhận đặt hàng",
     "placing": "Đang tạo đơn…",
-    "agree": "Bằng việc đặt hàng, bạn đồng ý dùng bộ asset theo lợi ích của gói và không chia sẻ, phân phối lại hay bán lại file gốc.",
+    "agree": "Bằng việc đặt hàng, bạn đồng ý dùng bộ asset theo lợi ích của gói và không chia sẻ, phân phối lại hay bán lại file gốc (<terms>Điều khoản sử dụng</terms>, <refund>Chính sách hoàn tiền</refund>).",
     "emptyTitle": "Chưa có gì để thanh toán",
     "emptyText": "Giỏ hàng không còn bộ nào cần trả tiền.",
     "errors": {
@@ -1505,6 +1510,208 @@
       "expiry": "Link có hiệu lực trong {minutes} phút và chỉ dùng được một lần.",
       "linkHint": "Nếu nút không bấm được, hãy chép link sau vào trình duyệt:",
       "ignore": "Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua thư này. Mật khẩu của bạn vẫn giữ nguyên."
+    }
+  },
+  "info": {
+    "draftNotice": "Nội dung mẫu, chưa phải văn bản chính thức: chủ cửa hàng sẽ đọc và sửa lại cho đúng thực tế trước khi bán thật.",
+    "about": {
+      "metaDescription": "Asset Game MMORPG 2D: chợ tài nguyên đồ họa HD Pixel Art phong cách phương Đông cho game 2D.",
+      "intro": "Asset Game MMORPG 2D bán và chia sẻ các bộ tài nguyên đồ họa HD Pixel Art cho game 2D phong cách phương Đông: tiên hiệp, võ hiệp, huyền huyễn, thần thoại phương Đông và dark fantasy.",
+      "sections": {
+        "what": {
+          "title": "Chúng tôi làm gì",
+          "body": "Mỗi sản phẩm là một bộ asset trọn gói từ A đến Z: nhân vật, bản đồ, quái vật, kỹ năng, giao diện, vật phẩm… được chia thành các phần rõ ràng trong cùng một bộ. Bạn xem trước từng phần trên trang bộ trước khi tải hoặc mua."
+        },
+        "who": {
+          "title": "Dành cho ai",
+          "body": "- Nhà phát triển game độc lập và studio nhỏ.\n- Người làm game MMORPG, RPG 2D.\n- Người dùng công cụ AI để làm game và cần tài nguyên đồng bộ một phong cách."
+        },
+        "model": {
+          "title": "Miễn phí và Premium",
+          "body": "Bộ Miễn phí tải được sau khi đăng nhập: mỗi tài khoản có 2 lượt tải cho mỗi bộ và có thể mua thêm lượt.\n\nBộ Premium được bán riêng từng bộ. Không có gói thành viên hay thuê bao. Mua xong, bộ nằm trong Thư viện của bạn và tải lại được khi cần."
+        },
+        "rights": {
+          "title": "Quyền sử dụng",
+          "body": "Mỗi bộ có mục Lợi ích trên trang bộ, ghi rõ bạn được làm gì với bộ đó. Phần chung cho mọi bộ nằm ở trang Điều khoản sử dụng."
+        },
+        "contact": {
+          "title": "Liên hệ",
+          "body": "Bấm nút chat ở góc dưới bên phải để chọn kênh liên hệ."
+        }
+      }
+    },
+    "faq": {
+      "metaDescription": "Câu hỏi thường gặp về tài khoản, bộ Miễn phí, mua bộ Premium, quyền sử dụng asset và hoàn tiền.",
+      "intro": "Câu trả lời ngắn cho những câu hỏi hay gặp. Không thấy câu hỏi của bạn? Bấm nút chat ở góc dưới bên phải.",
+      "groups": {
+        "account": {
+          "title": "Tài khoản",
+          "items": {
+            "need": {
+              "q": "Có cần tài khoản không?",
+              "a": "Xem cửa hàng thì không cần. Tải bộ Miễn phí, mua bộ Premium và dùng Thư viện thì cần đăng nhập, để bộ được lưu vào tài khoản của bạn."
+            },
+            "forgot": {
+              "q": "Quên mật khẩu thì làm sao?",
+              "a": "Bấm \"Quên mật khẩu?\" ở trang đăng nhập rồi nhập email. Link đặt lại mật khẩu được gửi tới email đó và dùng được trong 30 phút. Không thấy thư thì xem cả mục Spam."
+            }
+          }
+        },
+        "free": {
+          "title": "Bộ Miễn phí",
+          "items": {
+            "count": {
+              "q": "Bộ Miễn phí tải được mấy lần?",
+              "a": "Mỗi tài khoản tải mỗi bộ Miễn phí 2 lần. Lần tải đầu đưa bộ vào Thư viện của bạn; hết lượt, bộ vẫn nằm trong Thư viện."
+            },
+            "more": {
+              "q": "Hết lượt tải thì sao?",
+              "a": "Bạn mua thêm lượt cho đúng bộ đó, ngay trên trang bộ hoặc trong Thư viện. Số lượt và giá hiện ở đó."
+            }
+          }
+        },
+        "premium": {
+          "title": "Mua bộ Premium",
+          "items": {
+            "pay": {
+              "q": "Thanh toán bằng cách nào?",
+              "a": "Chuyển khoản ngân hàng bằng mã VietQR hiện ở bước thanh toán, với nội dung chuyển khoản là mã đơn. Hệ thống tự xác nhận khi tiền về, thường trong vài phút."
+            },
+            "ttl": {
+              "q": "Đơn chờ thanh toán được giữ bao lâu?",
+              "a": "30 phút. Quá thời gian đó đơn hết hạn; nếu vẫn muốn mua, bạn đặt một đơn mới."
+            },
+            "download": {
+              "q": "Mua xong tải ở đâu, tải được mấy lần?",
+              "a": "Bộ đã mua nằm trong Thư viện. Bạn tải lại không giới hạn số lần; mỗi lần tải dùng một link chỉ có hiệu lực trong thời gian ngắn."
+            },
+            "coupon": {
+              "q": "Dùng mã giảm giá ở đâu?",
+              "a": "Nhập mã ở trang Giỏ hàng trước khi thanh toán. Giá và tổng tiền luôn được tính lại khi đặt đơn."
+            }
+          }
+        },
+        "usage": {
+          "title": "Sử dụng asset",
+          "items": {
+            "commercial": {
+              "q": "Tôi có được dùng asset trong game thương mại không?",
+              "a": "Xem mục Lợi ích trên trang của từng bộ: mỗi bộ ghi rõ bạn được làm gì. Phần chung nằm ở trang Điều khoản sử dụng."
+            },
+            "share": {
+              "q": "Tôi có được chia sẻ hoặc bán lại file không?",
+              "a": "Không. Bạn không được chia sẻ, phân phối lại hay bán lại file gốc của bộ, kể cả khi đã chỉnh sửa, trừ khi mục Lợi ích của bộ cho phép rõ."
+            },
+            "update": {
+              "q": "Bộ có bản cập nhật thì sao?",
+              "a": "Bản mới của bộ bạn đã có sẽ hiện trong Thư viện; bạn tải bản mới nhất ở đó."
+            }
+          }
+        },
+        "refund": {
+          "title": "Hoàn tiền",
+          "items": {
+            "when": {
+              "q": "Tôi có được hoàn tiền không?",
+              "a": "Xem trang Chính sách hoàn tiền. Khi được hoàn tiền, bộ bị gỡ khỏi Thư viện và không tải được nữa."
+            }
+          }
+        }
+      }
+    },
+    "terms": {
+      "metaDescription": "Điều khoản sử dụng Asset Game MMORPG 2D: tài khoản, sản phẩm số, thanh toán, quyền sử dụng asset và lượt tải.",
+      "intro": "Điều khoản này áp dụng khi bạn dùng Asset Game MMORPG 2D: xem, tải và mua bộ asset, và dùng tài khoản.",
+      "sections": {
+        "account": {
+          "title": "Tài khoản",
+          "body": "- Bạn tự giữ email và mật khẩu của mình; thao tác trên tài khoản được coi là của chủ tài khoản.\n- Cửa hàng có thể khoá tài khoản vi phạm điều khoản, ví dụ chia sẻ lại file hoặc dùng công cụ tải tự động.\n- Khi đổi mật khẩu hoặc tài khoản bị khoá, mọi phiên đăng nhập cũ hết hiệu lực."
+        },
+        "products": {
+          "title": "Sản phẩm số",
+          "body": "Mỗi sản phẩm là một bộ asset số, chỉ bán nguyên bộ. Ảnh xem trước và thông số trên trang bộ mô tả nội dung của bộ. Bộ có ghi DEMO là dữ liệu mẫu, không phải sản phẩm thật."
+        },
+        "payment": {
+          "title": "Giá và thanh toán",
+          "body": "Giá hiển thị bằng đồng Việt Nam. Giá, mã giảm giá và tổng tiền được tính lại khi đặt đơn. Bộ Premium chỉ tải được sau khi thanh toán được xác nhận."
+        },
+        "rights": {
+          "title": "Quyền sử dụng",
+          "body": "Quyền sử dụng của từng bộ nằm ở mục Lợi ích trên trang bộ. Mua một bộ không cho bạn quyền với bộ khác.\n\nTrong mọi trường hợp, bạn không được chia sẻ, phân phối lại hay bán lại file gốc của bộ, trừ khi mục Lợi ích của bộ cho phép rõ."
+        },
+        "downloads": {
+          "title": "Lượt tải",
+          "body": "- Bộ Miễn phí: mỗi tài khoản 2 lượt cho mỗi bộ, có thể mua thêm lượt.\n- Bộ Premium đã mua: tải lại không giới hạn.\n- Để chống tải tự động, mỗi tài khoản tải tối đa 100 lượt mỗi giờ."
+        },
+        "refund": {
+          "title": "Hoàn tiền",
+          "body": "Theo trang Chính sách hoàn tiền."
+        },
+        "changes": {
+          "title": "Thay đổi điều khoản",
+          "body": "Cửa hàng có thể cập nhật điều khoản; bản mới được đăng tại trang này."
+        },
+        "contact": {
+          "title": "Liên hệ",
+          "body": "Bấm nút chat ở góc dưới bên phải."
+        }
+      }
+    },
+    "privacy": {
+      "metaDescription": "Chính sách bảo mật của Asset Game MMORPG 2D: dữ liệu được lưu, mục đích sử dụng, cookie và nơi lưu dữ liệu.",
+      "intro": "Trang này cho biết cửa hàng lưu dữ liệu gì về bạn, dùng để làm gì và lưu ở đâu.",
+      "sections": {
+        "collect": {
+          "title": "Dữ liệu được lưu",
+          "body": "- Tài khoản: email, tên hiển thị (nếu có) và mật khẩu. Mật khẩu chỉ được lưu dạng băm, không ai đọc được mật khẩu gốc.\n- Đơn hàng: bộ đã mua, số tiền, mã đơn, thời gian và trạng thái thanh toán.\n- Lịch sử tải: bộ nào được tải và lúc nào.\n- Giỏ hàng của khách chưa đăng nhập: xoá sau 30 ngày không thay đổi.\n- Chống lạm dụng: số lần đăng nhập sai hoặc thử mã giảm giá theo địa chỉ IP, chỉ lưu dạng băm và xoá sau 24 giờ."
+        },
+        "notCollected": {
+          "title": "Dữ liệu không lưu",
+          "body": "Cửa hàng không lưu số thẻ hay thông tin đăng nhập ngân hàng. Thanh toán là chuyển khoản: cửa hàng chỉ nhận thông báo đã nhận tiền, kèm số tiền và nội dung chuyển khoản."
+        },
+        "use": {
+          "title": "Dùng để làm gì",
+          "body": "- Đăng nhập, giữ Thư viện và cho tải lại bộ đã mua.\n- Xác nhận thanh toán và xử lý hoàn tiền.\n- Gửi email cần thiết, ví dụ link đặt lại mật khẩu. Không gửi email quảng cáo.\n- Chống gian lận và tải tự động."
+        },
+        "cookies": {
+          "title": "Cookie và dữ liệu trên trình duyệt",
+          "body": "- Cookie phiên đăng nhập.\n- Cookie giỏ hàng của khách chưa đăng nhập.\n- Ngôn ngữ bạn đã chọn.\n- Giao diện sáng / tối và trạng thái thu gọn menu (lưu trong trình duyệt).\n\nKhông dùng cookie quảng cáo hay công cụ theo dõi của bên thứ ba."
+        },
+        "where": {
+          "title": "Dữ liệu nằm ở đâu",
+          "body": "- Máy chủ web: Vercel.\n- Cơ sở dữ liệu: Neon (PostgreSQL).\n- File và ảnh: Cloudflare R2.\n- Email: Resend.\n- Thông báo chuyển khoản: SePay."
+        },
+        "rights": {
+          "title": "Quyền của bạn",
+          "body": "Bạn xem và sửa thông tin tài khoản ở trang Tài khoản. Muốn xoá tài khoản và dữ liệu, hãy liên hệ qua nút chat ở góc dưới bên phải; dữ liệu đơn hàng có thể phải giữ lại theo quy định kế toán."
+        }
+      }
+    },
+    "refund": {
+      "metaDescription": "Chính sách hoàn tiền của Asset Game MMORPG 2D: khi nào được hoàn tiền, thời hạn và cách gửi yêu cầu.",
+      "intro": "Bộ asset là sản phẩm số, tải về được ngay, nên yêu cầu hoàn tiền được xét theo các trường hợp dưới đây.",
+      "sections": {
+        "yes": {
+          "title": "Khi nào được hoàn tiền",
+          "body": "- Đã thanh toán nhưng không tải được bộ do lỗi của cửa hàng, và cửa hàng không khắc phục được.\n- File của bộ bị hỏng hoặc khác hẳn mô tả trên trang bộ.\n- Thanh toán hai lần cho cùng một bộ."
+        },
+        "no": {
+          "title": "Khi nào không hoàn tiền",
+          "body": "- Đã tải bộ, bộ đúng như mô tả, chỉ là không còn cần nữa.\n- Mua nhầm nhưng đã tải bộ.\n- Đơn 0 ₫ (dùng mã giảm giá toàn phần)."
+        },
+        "deadline": {
+          "title": "Thời hạn",
+          "body": "Gửi yêu cầu trong vòng 7 ngày kể từ khi thanh toán."
+        },
+        "how": {
+          "title": "Cách gửi yêu cầu",
+          "body": "Bấm nút chat ở góc dưới bên phải, gửi mã đơn (dạng AG-…) và lý do. Cửa hàng sẽ trả lời sớm nhất có thể."
+        },
+        "after": {
+          "title": "Sau khi hoàn tiền",
+          "body": "Tiền được chuyển lại vào tài khoản ngân hàng bạn đã dùng để thanh toán. Bộ bị gỡ khỏi Thư viện và không tải được nữa; lượt tải đã mua thêm của đơn đó cũng bị trừ."
+        }
+      }
     }
   }
 }

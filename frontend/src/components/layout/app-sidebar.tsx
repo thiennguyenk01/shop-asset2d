@@ -3,6 +3,7 @@ import { cacheLife } from "next/cache";
 import { Suspense, type ReactNode } from "react";
 import { MAIN_NAV, SUPPORT_NAV } from "./app-nav";
 import { BrandLogo } from "./brand-logo";
+import { LegalLinks } from "./legal-links";
 import { SidebarNav } from "./sidebar-nav";
 
 export async function getCopyrightYear() {
@@ -60,9 +61,10 @@ export async function AppSidebar() {
         </Suspense>
       </nav>
       {/* Fixed width so the text does not reflow while the rail narrows; it is clipped and faded instead. */}
-      <p className="w-64 shrink-0 px-6 pt-2 pb-5 text-xs leading-relaxed text-ivory-500 transition-opacity duration-150 sidebar-collapsed:opacity-0">
-        {tf("copyright", { year })}
-      </p>
+      <div className="flex w-64 shrink-0 flex-col gap-1 px-6 pt-2 pb-5 transition-opacity duration-150 sidebar-collapsed:invisible sidebar-collapsed:opacity-0">
+        <p className="text-xs leading-relaxed text-ivory-500">{tf("copyright", { year })}</p>
+        <LegalLinks />
+      </div>
     </aside>
   );
 }

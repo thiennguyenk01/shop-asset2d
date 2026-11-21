@@ -89,16 +89,18 @@ describe("sitemap.xml", () => {
     ]);
   });
 
-  it("the shop in 3 languages, each pack only in its languages, with absolute alternates", () => {
+  it("the shop and the information pages in 3 languages, each pack only in its languages, with absolute alternates", () => {
     const entries = sitemapEntries("https://shop.example/", [{ slug: "a", locales: ["en", "vi"] }]);
+    const info = ["about", "faq", "terms", "privacy", "refund"].flatMap((p) => ["vi", "en", "zh"].map((l) => `https://shop.example/${l}/${p}`));
     expect(entries.map((e) => e.url)).toEqual([
       "https://shop.example/vi/shop",
       "https://shop.example/en/shop",
       "https://shop.example/zh/shop",
+      ...info,
       "https://shop.example/vi/product/a",
       "https://shop.example/en/product/a",
     ]);
-    expect(entries[3].alternates?.languages).toEqual({
+    expect(entries[3 + info.length].alternates?.languages).toEqual({
       vi: "https://shop.example/vi/product/a",
       en: "https://shop.example/en/product/a",
       "x-default": "https://shop.example/vi/product/a",

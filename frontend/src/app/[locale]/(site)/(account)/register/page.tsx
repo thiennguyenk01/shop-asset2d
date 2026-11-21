@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import { AuthCard, AuthFormSkeleton } from "@/components/account/auth-card";
 import { RegisterForm } from "@/components/account/auth-forms";
 import { Link, redirect } from "@backend/i18n/navigation";
@@ -30,7 +30,18 @@ export default async function RegisterPage({ params, searchParams }: PageProps<"
       <Suspense fallback={<AuthFormSkeleton fields={4} />}>
         <RegisterContent locale={locale as Locale} searchParams={searchParams} />
       </Suspense>
+      <p className="mt-4 text-xs text-pretty text-ivory-500" data-testid="register-agree">
+        {t.rich("agree", { terms: (c) => <PolicyLink href="/terms">{c}</PolicyLink>, privacy: (c) => <PolicyLink href="/privacy">{c}</PolicyLink> })}
+      </p>
     </AuthCard>
+  );
+}
+
+function PolicyLink({ href, children }: { href: "/terms" | "/privacy"; children: ReactNode }) {
+  return (
+    <Link href={href} className="text-ivory-300 underline underline-offset-4 hover:text-ivory-100">
+      {children}
+    </Link>
   );
 }
 

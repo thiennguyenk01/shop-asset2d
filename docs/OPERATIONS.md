@@ -69,7 +69,7 @@ Link đổi mỗi lần chạy; mất khi máy ngủ hoặc tắt tiến trình.
 
 ## 5. Sao lưu tài liệu
 
-- Repo chưa dùng git. Trước khi tái cấu trúc tài liệu (2026-11-15) đã sao lưu `CLAUDE.md` và `DESIGN.md` vào `.backup/docs-2026-11-15/` (`*.bak` + `MANIFEST.txt` có SHA-256). **Chỉ xóa bản sao lưu khi người dùng cho phép.**
+- Repo dùng git từ 2026-11-21 (bước 7.6, nhánh `main`, đẩy lên GitHub `thiennguyenk01/asset2d`, riêng tư). Các dòng sau về sao lưu tài liệu giữ nguyên lịch sử: Trước khi tái cấu trúc tài liệu (2026-11-15) đã sao lưu `CLAUDE.md` và `DESIGN.md` vào `.backup/docs-2026-11-15/` (`*.bak` + `MANIFEST.txt` có SHA-256). **Chỉ xóa bản sao lưu khi người dùng cho phép.**
 - `docs/requirements/ORIGINAL-BRIEF.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md` nằm trong `.prettierignore` để `npm run format` không định dạng lại nội dung nguyên văn.
 
 ## 6. Việc vận hành chờ người dùng
@@ -95,3 +95,26 @@ Cài một môi trường (dev; production làm lại với bucket và token ri�
 
 - Mỗi lần chạy E2E tải vài file thử lên bucket dev; `npm run cron:run -- cleanup` xoá file không còn dòng nào trỏ tới sau 24 giờ.
 - Tên miền sắp có (người dùng, 2026-11-21): `asset2d.id.vn`. Đề xuất của Claude (PENDING): thêm tên miền vào Cloudflare (đổi nameserver ở nơi mua), gắn `media.asset2d.id.vn` vào bucket ảnh rồi đổi `R2_PUBLIC_BASE_URL`; bản ghi trỏ web sang Vercel để DNS only.
+
+## 8. Bản xem trước trên Vercel (bước 7.6)
+
+Lựa chọn: DECISIONS #54 (GitHub + Vercel; ai có link cũng mở được; database sạch + 10 bộ demo). Chạy cổng **Demo**, không nhận tiền thật; `robots.txt` chặn công cụ tìm kiếm (không phải production). Lần đầu lên mạng theo #43.
+
+**Hiện tại (2026-11-21):** Vercel (gói Hobby) project `asset2d`, nhánh `main` → bản **Preview**, địa chỉ cố định `https://asset2d-git-main-thien-nguyens-projects-bad6033d.vercel.app`. Code ở GitHub `thiennguyenk01/asset2d` (riêng tư). Database: nhánh Neon `preview` (tách từ `production`, kết nối pooled cho app, direct cho migrate). File: 2 bucket R2 `asset-game-preview-public` (địa chỉ r2.dev) và `asset-game-preview-private`, token riêng chỉ cho 2 bucket đó. Mọi giá trị nằm trong `.env.preview` (không commit) và trong Environment Variables của Vercel (môi trường Preview).
+
+Cài từ đầu:
+
+1. **GitHub:** tạo repo riêng tư, rồi `git remote add origin https://github.com/<tên tài khoản>/<repo>.git` và `git push -u origin main` (thay chữ trong `<>` bằng tên thật). `.gitignore` chặn `.env*`, `.storage/`, `.mail-outbox/`, `.backup/`, `node_modules`; `.gitattributes` (`* -text`) giữ nguyên kiểu xuống dòng của từng file (Prisma tính checksum của `migration.sql`; tài liệu là CRLF, chữ dịch là LF).
+2. **Neon:** Branches → Create branch `preview` (parent `production`; **tắt tự xoá** (Auto-delete), nếu để "After 1 day" nhánh mất sau 1 ngày). Connect: chuỗi có pooling → `DATABASE_URL`, chuỗi tắt pooling → `DIRECT_URL`.
+3. **R2:** làm như §7 nhưng 2 bucket và token riêng của bản thử; CORS `AllowedOrigins` = địa chỉ web của bản thử (ở **cả 2** bucket, không có `/` ở cuối); không dùng địa chỉ giả như `TEN_VERCEL`.
+4. **`.env.preview`:** `npm run preview:init`, điền `APP_URL`, `DATABASE_URL`, `DIRECT_URL`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BASE_URL`. `APP_URL` = `https://<project>-git-main-<tên nhóm Vercel>.vercel.app` (tên nhóm là đoạn sau `vercel.com/` trên thanh địa chỉ); kiểm lại ở Settings → Domains.
+5. **Vercel:** Add New → Project → chọn repo; giữ cấu hình build (`vercel.json` đã đặt `buildCommand` = `npm run build`, `outputDirectory` = `frontend/.next`). Lần build đầu sẽ lỗi vì thiếu biến: bình thường.
+   - Settings → **Environments → Production → Branch Tracking:** đổi `main` thành `production` và Save (nhánh `production` phải có trên GitHub: `git push origin main:production`). **Bắt buộc**: nếu `main` còn là nhánh Production thì build chạy ở chế độ production và ứng dụng từ chối khởi động (cổng Demo, lưu trữ, email bị cấm ở production), đúng chốt chặn của `backend/src/env.ts`. Từ đó nhánh `production` là nơi chạy web thật (bước 7.7): chỉ đẩy code vào đó khi sẵn sàng.
+   - Settings → **Deployment Protection:** tắt Vercel Authentication (nếu còn bật, mọi địa chỉ bị chuyển sang trang đăng nhập Vercel, mã 302).
+   - Settings → **Environment Variables:** dán nội dung `.env.preview` vào ô Key, **chỉ chọn môi trường Preview** (bỏ Production và Development; kiểm lại ngay trước khi Save, vì chọn nhầm Production làm biến chạy ở production, và Vercel không cho thêm lần hai: phải xoá rồi thêm lại).
+6. `npm run preview:setup` (migrate + seed; nếu báo "DatabaseNotReachable" ngay sau khi tạo nhánh Neon thì chờ một lát và chạy lại: chạy lại bao nhiêu lần cũng được), rồi `npm run preview:check` (8 bước ✔, gồm CORS).
+7. Đẩy một commit lên `main` (kể cả `git commit --allow-empty`): Vercel build bản **Preview** (nhãn Preview ở tab Deployments, trạng thái Ready). Mỗi lần đẩy lên `main` là một lần build lại. Đăng ký tài khoản trên bản thử rồi `npm run preview:grant -- <email>` để có Admin.
+
+- Bản thử không gửi email (`MAIL_DRIVER=outbox` ghi vào `/tmp`, mất khi hàm kết thúc): không thử "Quên mật khẩu"; việc định kỳ (`/api/cron/*`, đơn quá hạn, dọn file) chưa được lên lịch ở bản thử.
+- Ảnh demo và file demo nằm ở bucket của bản thử; muốn dựng lại từ đầu: `npm run preview:setup` (seed tạo lại 10 bộ demo; không đụng bộ thật khác).
+- Khi làm 7.7: dự án Vercel có thể dùng chung; nhánh `production`, biến môi trường cho môi trường Production (bucket + token + nhánh Neon production riêng, `APP_ENV` / `VERCEL_ENV` = production, cổng thanh toán thật, email thật, `CRON_SECRET`), tên miền `asset2d.id.vn`; xem `docs/ROADMAP.md`.

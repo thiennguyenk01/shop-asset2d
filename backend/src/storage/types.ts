@@ -27,6 +27,13 @@ export interface StorageProvider {
   inspect(bucket: Bucket, key: string, headBytes: number): Promise<StoredObjectDetails | null>;
   /** Every object under `prefix/` with its last change (GĐ6.3: clean-up of abandoned uploads). */
   list(bucket: Bucket, prefix: string): Promise<ListedObject[]>;
+  /** Number of objects and total bytes of the whole bucket (Admin "Usage": the free storage allowance). */
+  usage(bucket: Bucket): Promise<BucketUsage>;
+}
+
+export interface BucketUsage {
+  objects: number;
+  bytes: number;
 }
 
 export interface ListedObject {

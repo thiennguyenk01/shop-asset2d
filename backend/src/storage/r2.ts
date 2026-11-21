@@ -16,7 +16,7 @@ import {
   R2_DOWNLOAD_TTL_SECONDS,
   R2_UPLOAD_TTL_SECONDS,
 } from "./r2-rules";
-import { assertSafeKey, type Bucket, type ListedObject, type StorageProvider, type StoredObjectDetails } from "./types";
+import { assertSafeKey, type Bucket, type BucketUsage, type ListedObject, type StorageProvider, type StoredObjectDetails } from "./types";
 
 /**
  * Cloudflare R2 storage (GĐ7.5; S3 API). Two buckets: PUBLIC (preview media, served from the custom domain) and
@@ -112,6 +112,22 @@ export class R2Storage implements StorageProvider {
       token = res.IsTruncated ? res.NextContinuationToken : undefined;
     } while (token);
     return out;
+  }
+
+  /** One page of 1,000 keys per request (a Class A operation each), sizes only. */
+  async usage(bucket: Bucket): Promise<BucketUsage> {
+    let objects = 0;
+    let bytes = 0;
+    let token: string | undefined;
+    do {
+      const res = await this.client.send(new ListObjectsV2Command({ Bucket: this.bucketName(bucket), ContinuationToken: token }));
+      for (const o of res.Contents ?? []) {
+        objects++;
+        bytes += o.Size ?? 0;
+      }
+      token = res.IsTruncated ? res.NextContinuationToken : undefined;
+    } while (token);
+    return { objects, bytes };
   }
 
   /** Streams the object once: size, SHA-256 and its first bytes (never the whole archive in memory). */

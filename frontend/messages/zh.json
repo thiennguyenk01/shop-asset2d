@@ -679,6 +679,7 @@
       "orders": "订单",
       "users": "用户",
       "coupons": "优惠码",
+      "usage": "用量",
       "settings": "设置",
       "audit": "操作日志"
     },
@@ -1713,5 +1714,45 @@
         }
       }
     }
+  },
+  "adminUsage": {
+    "title": "用量",
+    "intro": "本环境已使用各服务免费额度的多少，避免商店额外付费。达到 80 % 时总览页显示提醒，达到 95 % 时显示红色提醒。",
+    "measuredAt": "测量于 {time} · 10 分钟后自动重新测量",
+    "refresh": "立即测量",
+    "amount": "{used} / {limit}",
+    "failed": "测量时无法读取此数值。请点击“立即测量”。",
+    "levels": {
+      "ok": "余量充足",
+      "warn": "接近上限",
+      "critical": "即将用完或已超出"
+    },
+    "items": {
+      "database": "数据库（Neon）",
+      "storage": "文件存储（Cloudflare R2）",
+      "emailDay": "过去 24 小时邮件（Resend）",
+      "emailMonth": "本月邮件（Resend）"
+    },
+    "notes": {
+      "database": "本环境使用的 Neon 分支。免费额度按项目内所有分支（开发、预览、正式站）合计。",
+      "buckets": "预览图片：{publicBytes}（{publicCount} 个文件）· 出售文件：{privateBytes}（{privateCount} 个文件）。",
+      "storage": "免费额度按 Cloudflare 账户内所有存储桶（开发、预览、正式站）合计；此处只统计本环境的两个存储桶。",
+      "storageLocal": "本环境把文件存放在本机（.storage 文件夹），不是 R2。",
+      "email": "估算值：统计已创建的密码重置链接数量（网站唯一发送的邮件），分别为过去 24 小时和本月初至今（UTC）。",
+      "emailNotSent": "本环境不发送真实邮件（MAIL_DRIVER={driver}），数值仅供参考。"
+    },
+    "tablesTitle": "数据库中最大的表",
+    "tablesIntro": "数据和索引，从大到小。",
+    "notMeasuredTitle": "此处未测量",
+    "notMeasured": "Neon 计算时长、R2 操作次数（A / B 类）、Vercel 带宽和函数调用次数：请在各服务商的控制台查看。",
+    "limitsNote": "免费额度取自服务商页面，日期 {date}：",
+    "providers": {
+      "database": "Neon",
+      "storage": "Cloudflare R2",
+      "emailDay": "Resend"
+    },
+    "bannerWarn": "即将达到免费额度上限：{items}。",
+    "bannerCritical": "免费额度即将用完或已超出：{items}。",
+    "bannerLink": "查看用量"
   }
 }

@@ -679,6 +679,7 @@
       "orders": "Đơn hàng",
       "users": "Người dùng",
       "coupons": "Mã giảm giá",
+      "usage": "Dung lượng",
       "settings": "Cài đặt",
       "audit": "Nhật ký"
     },
@@ -1713,5 +1714,45 @@
         }
       }
     }
+  },
+  "adminUsage": {
+    "title": "Dung lượng",
+    "intro": "Môi trường này đang dùng bao nhiêu so với gói miễn phí của từng dịch vụ, để cửa hàng không phải trả thêm tiền. Từ 80 % trang Tổng quan hiện cảnh báo, từ 95 % cảnh báo đỏ.",
+    "measuredAt": "Đo lúc {time} · tự đo lại sau 10 phút",
+    "refresh": "Đo lại ngay",
+    "amount": "{used} / {limit}",
+    "failed": "Không đọc được số này lúc đo. Bấm \"Đo lại ngay\".",
+    "levels": {
+      "ok": "Còn thoải mái",
+      "warn": "Sắp chạm giới hạn",
+      "critical": "Gần hết hoặc đã vượt"
+    },
+    "items": {
+      "database": "Database (Neon)",
+      "storage": "Lưu file (Cloudflare R2)",
+      "emailDay": "Email 24 giờ qua (Resend)",
+      "emailMonth": "Email tháng này (Resend)"
+    },
+    "notes": {
+      "database": "Nhánh Neon mà môi trường này đang dùng. Gói miễn phí tính chung mọi nhánh trong project (dev, bản thử, web thật).",
+      "buckets": "Ảnh xem trước: {publicBytes} ({publicCount} file) · File bán: {privateBytes} ({privateCount} file).",
+      "storage": "Gói miễn phí tính chung mọi bucket của tài khoản Cloudflare (dev, bản thử, web thật); số ở đây chỉ là 2 bucket của môi trường này.",
+      "storageLocal": "Môi trường này lưu file trên máy (thư mục .storage), chưa phải R2.",
+      "email": "Ước tính: đếm số link đặt lại mật khẩu đã tạo (thư duy nhất web gửi), trong 24 giờ qua và từ đầu tháng (giờ UTC).",
+      "emailNotSent": "Môi trường này chưa gửi thư thật (MAIL_DRIVER={driver}): số trên chỉ để tham khảo."
+    },
+    "tablesTitle": "Bảng lớn nhất trong database",
+    "tablesIntro": "Dữ liệu và chỉ mục, lớn nhất trước.",
+    "notMeasuredTitle": "Chưa đo ở đây",
+    "notMeasured": "Giờ máy Neon, số thao tác R2 (Class A / B), băng thông và số lần gọi hàm của Vercel: xem trên trang quản lý của từng nhà cung cấp.",
+    "limitsNote": "Giới hạn gói miễn phí lấy từ trang của nhà cung cấp ngày {date}:",
+    "providers": {
+      "database": "Neon",
+      "storage": "Cloudflare R2",
+      "emailDay": "Resend"
+    },
+    "bannerWarn": "Sắp chạm giới hạn gói miễn phí: {items}.",
+    "bannerCritical": "Gần hết hoặc đã vượt gói miễn phí: {items}.",
+    "bannerLink": "Xem Dung lượng"
   }
 }

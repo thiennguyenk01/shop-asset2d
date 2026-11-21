@@ -25,3 +25,14 @@ export function savingPercent(price: number, compareAt: number | null | undefine
 export function pickTranslation<T extends { locale: string }>(rows: readonly T[], locale: Locale): T | undefined {
   return rows.find((r) => r.locale === locale) ?? rows.find((r) => r.locale === "vi") ?? rows[0];
 }
+
+/** Decimal units, as the hosting providers state their allowances: "1,2 GB", "350 MB", "12 kB". */
+export function formatBytes(bytes: number, locale: Locale): string {
+  const units = [
+    ["gigabyte", 1e9],
+    ["megabyte", 1e6],
+    ["kilobyte", 1e3],
+  ] as const;
+  const [unit, size] = units.find(([, s]) => bytes >= s) ?? ["byte", 1];
+  return new Intl.NumberFormat(INTL_TAG[locale], { style: "unit", unit, unitDisplay: "short", maximumFractionDigits: size >= 1e9 ? 2 : 1 }).format(bytes / size);
+}

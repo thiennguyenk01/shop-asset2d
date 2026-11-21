@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { RevenueChart } from "@/components/admin/revenue-chart";
+import { UsageBanner } from "@/components/admin/usage-banner";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@backend/i18n/navigation";
 import type { Locale } from "@backend/i18n/routing";
@@ -38,6 +39,9 @@ export default async function AdminOverviewPage({ params, searchParams }: PagePr
         <h1 className="text-xl font-semibold text-ivory-100">{t("title")}</h1>
         <p className="text-sm text-pretty text-ivory-500">{t("intro")}</p>
       </header>
+      <Suspense fallback={null}>
+        <UsageBanner />
+      </Suspense>
       <Suspense
         fallback={
           <div className="flex flex-col gap-5" aria-hidden="true">

@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Package,
   ReceiptText,
+  HardDrive,
   ScrollText,
   Settings,
   TicketPercent,
@@ -22,6 +23,7 @@ const ICONS: Record<AdminNavKey, LucideIcon> = {
   users: UsersRound,
   coupons: TicketPercent,
   audit: ScrollText,
+  usage: HardDrive,
   settings: Settings,
 };
 

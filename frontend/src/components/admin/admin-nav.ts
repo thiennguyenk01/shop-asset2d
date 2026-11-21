@@ -3,7 +3,7 @@
  * with a "Soon" tag and are not links, so the menu already tells the plan without dead ends.
  * `key` is a translation key under `admin.nav`.
  */
-export type AdminNavKey = "overview" | "products" | "orders" | "users" | "coupons" | "audit" | "settings";
+export type AdminNavKey = "overview" | "products" | "orders" | "users" | "coupons" | "audit" | "usage" | "settings";
 export type AdminNavEntry = { key: AdminNavKey; href: string; ready: boolean };
 
 export const ADMIN_NAV: AdminNavEntry[] = [
@@ -13,6 +13,7 @@ export const ADMIN_NAV: AdminNavEntry[] = [
   { key: "users", href: "/admin/users", ready: true },
   { key: "coupons", href: "/admin/coupons", ready: true },
   { key: "audit", href: "/admin/audit", ready: true },
+  { key: "usage", href: "/admin/usage", ready: true },
   { key: "settings", href: "/admin/settings", ready: true },
 ];
 

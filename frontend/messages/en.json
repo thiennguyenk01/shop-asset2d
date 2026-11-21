@@ -679,6 +679,7 @@
       "orders": "Orders",
       "users": "Users",
       "coupons": "Coupons",
+      "usage": "Usage",
       "settings": "Settings",
       "audit": "Activity log"
     },
@@ -1713,5 +1714,45 @@
         }
       }
     }
+  },
+  "adminUsage": {
+    "title": "Usage",
+    "intro": "How much of each service's free plan this environment uses, so the shop does not have to pay extra. From 80 % the Overview shows a warning, from 95 % a red one.",
+    "measuredAt": "Measured {time} · measured again after 10 minutes",
+    "refresh": "Measure now",
+    "amount": "{used} / {limit}",
+    "failed": "This number could not be read. Tap \"Measure now\".",
+    "levels": {
+      "ok": "Plenty left",
+      "warn": "Close to the limit",
+      "critical": "Almost used up or over"
+    },
+    "items": {
+      "database": "Database (Neon)",
+      "storage": "File storage (Cloudflare R2)",
+      "emailDay": "Emails, last 24 hours (Resend)",
+      "emailMonth": "Emails this month (Resend)"
+    },
+    "notes": {
+      "database": "The Neon branch this environment uses. The free plan counts every branch of the project together (dev, preview, live site).",
+      "buckets": "Preview images: {publicBytes} ({publicCount} files) · Files for sale: {privateBytes} ({privateCount} files).",
+      "storage": "The free plan counts every bucket of the Cloudflare account together (dev, preview, live site); this number is only this environment's two buckets.",
+      "storageLocal": "This environment stores files on this machine (.storage folder), not on R2.",
+      "email": "Estimate: the number of password reset links created (the only mail the site sends), in the last 24 hours and since the start of the month (UTC).",
+      "emailNotSent": "This environment does not send real mail (MAIL_DRIVER={driver}): the numbers are for reference only."
+    },
+    "tablesTitle": "Largest tables in the database",
+    "tablesIntro": "Data and indexes, largest first.",
+    "notMeasuredTitle": "Not measured here",
+    "notMeasured": "Neon compute hours, R2 operations (Class A / B), Vercel bandwidth and function calls: see each provider's dashboard.",
+    "limitsNote": "Free plan limits taken from the providers' pages on {date}:",
+    "providers": {
+      "database": "Neon",
+      "storage": "Cloudflare R2",
+      "emailDay": "Resend"
+    },
+    "bannerWarn": "Close to the free plan limit: {items}.",
+    "bannerCritical": "Free plan almost used up or exceeded: {items}.",
+    "bannerLink": "View Usage"
   }
 }

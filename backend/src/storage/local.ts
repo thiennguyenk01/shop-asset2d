@@ -4,7 +4,7 @@ import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises"
 import type { Dirent } from "node:fs";
 import path from "node:path";
 import { Readable } from "node:stream";
-import { assertSafeKey, type Bucket, type ListedObject, type StorageProvider, type StoredObjectDetails } from "./types";
+import { assertSafeKey, type Bucket, type BucketUsage, type ListedObject, type StorageProvider, type StoredObjectDetails } from "./types";
 
 /**
  * Development-only storage on the local filesystem (forbidden in production by backend/src/env.ts).
@@ -83,6 +83,24 @@ export class LocalStorage implements StorageProvider {
       out.push({ key: path.relative(bucketDir, full).split(path.sep).join("/"), sizeBytes: s.size, modifiedAt: s.mtime });
     }
     return out;
+  }
+
+  async usage(bucket: Bucket): Promise<BucketUsage> {
+    let entries: Dirent[];
+    try {
+      entries = await readdir(path.join(this.root, bucket), { recursive: true, withFileTypes: true });
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code === "ENOENT") return { objects: 0, bytes: 0 };
+      throw e;
+    }
+    let objects = 0;
+    let bytes = 0;
+    for (const entry of entries) {
+      if (!entry.isFile()) continue;
+      objects++;
+      bytes += (await stat(path.join(entry.parentPath, entry.name))).size;
+    }
+    return { objects, bytes };
   }
 
   /** Size in bytes, or null when there is no such file. */

@@ -187,9 +187,12 @@
 }
 
 /* Height of the mobile bottom tab bar (layout/mobile-tabbar.tsx). 0 on desktop, where the sidebar is used.
-   <main> is padded by it; fixed bottom bars (product section nav, toasts) sit above it. */
+   <main> is padded by it; fixed bottom bars (product section nav, toasts) sit above it.
+   No env(safe-area-inset-bottom): the page does not use viewport-fit=cover, so browsers keep it clear of the
+   system bars themselves (the inset is 0 there), while some in-app browsers on Android (WebView of Zalo /
+   Facebook…) still report the navigation bar's height and the bar got an empty strip under it (2026-11-21). */
 :root {
-  --tabbar-h: calc(4rem + env(safe-area-inset-bottom));
+  --tabbar-h: 4rem;
 }
 @media (min-width: 64rem) {
   :root {

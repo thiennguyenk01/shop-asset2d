@@ -38,7 +38,7 @@ export function MobileTabbar({ copyright }: { copyright: string }) {
     <nav
       aria-label={t("mainLabel")}
       data-testid="mobile-tabbar"
-      className="fixed inset-x-0 bottom-0 z-50 h-(--tabbar-h) border-t border-bronze-700 bg-ink-900 pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-50 h-(--tabbar-h) border-t border-bronze-700 bg-ink-900 lg:hidden"
     >
       <ul className="grid h-full grid-cols-6">
         {TAB_NAV.map((item) => {

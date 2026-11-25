@@ -4,8 +4,8 @@ import vi from "../../messages/vi.json" with { type: "json" };
 import zh from "../../messages/zh.json" with { type: "json" };
 
 /**
- * Info pages (user choice 2026-11-22): About + FAQ in the menu's Support group, Terms · Privacy · Refund under the
- * copyright line (not a menu group, DECISIONS #20), sample texts with a notice, all three languages.
+ * Info pages (user choice 2026-11-22): About + FAQ in the menu's Support group, Terms · Privacy · Refund above the
+ * copyright line (moved there 2026-11-26; not a menu group, DECISIONS #20), sample texts with a notice, all three languages.
  */
 const PAGES = ["about", "faq", "terms", "privacy", "refund"] as const;
 const all = { vi, en, zh };
@@ -34,12 +34,14 @@ test.describe("Info pages", () => {
     await expect(answer).toBeVisible();
   });
 
-  test("desktop: Terms · Privacy · Refund under the copyright line, not in the menu", async ({ page, isMobile }) => {
+  test("desktop: Terms · Privacy · Refund above the copyright line, not in the menu", async ({ page, isMobile }) => {
     test.skip(isMobile, "desktop sidebar");
     await page.goto("/vi/shop");
     const sidebar = page.getByTestId("app-sidebar");
     const legal = sidebar.getByRole("navigation", { name: vi.nav.legalLabel });
     for (const p of ["terms", "privacy", "refund"] as const) await expect(legal.getByRole("link", { name: vi.nav[p] })).toBeVisible();
+    // The copyright line is the last line of the sidebar, right under the legal links.
+    expect(await legal.evaluate((el) => el.nextElementSibling?.textContent ?? "")).toContain("©");
     await expect(sidebar.getByRole("navigation", { name: vi.nav.mainLabel }).getByRole("link", { name: vi.nav.terms })).toHaveCount(0);
     await legal.getByRole("link", { name: vi.nav.refund }).click();
     await expect(page).toHaveURL(/\/vi\/refund$/);
@@ -53,7 +55,9 @@ test.describe("Info pages", () => {
     await page.goto("/vi/shop");
     await page.getByTestId("tabbar-more").click();
     const sheet = page.getByRole("dialog", { name: vi.nav.more });
-    await sheet.getByRole("navigation", { name: vi.nav.legalLabel }).getByRole("link", { name: vi.nav.privacy }).click();
+    const legal = sheet.getByRole("navigation", { name: vi.nav.legalLabel });
+    expect(await legal.evaluate((el) => el.nextElementSibling?.textContent ?? "")).toContain("©");
+    await legal.getByRole("link", { name: vi.nav.privacy }).click();
     await expect(sheet).toBeHidden();
     await expect(page).toHaveURL(/\/vi\/privacy$/);
     await expect(page.getByTestId("tabbar-more")).toHaveClass(/text-gold-300/); // "More" is the active tab

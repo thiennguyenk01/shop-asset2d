@@ -3,7 +3,7 @@ import { Link } from "@backend/i18n/navigation";
 import { LEGAL_PAGES } from "@backend/lib/info-pages";
 
 /**
- * Terms · Privacy · Refund under the copyright line (sidebar on desktop, "More" sheet on mobile). Not a menu
+ * Terms · Privacy · Refund above the copyright line (sidebar on desktop, "More" sheet on mobile). Not a menu
  * group: DECISIONS #20 keeps "Legal" out of the menu. Works in server and client components.
  */
 export function LegalLinks({ onNavigate, className = "" }: { onNavigate?: () => void; className?: string }) {

@@ -90,8 +90,8 @@ export function MobileTabbar({ copyright }: { copyright: string }) {
                   <SidebarNav items={SUPPORT_NAV} onNavigate={() => setOpen(false)} />
                 </div>
                 <div className="flex flex-col gap-1 px-3">
-                  <p className="text-xs text-ivory-500">{copyright}</p>
                   <LegalLinks onNavigate={() => setOpen(false)} />
+                  <p className="text-xs text-ivory-500">{copyright}</p>
                 </div>
               </Dialog.Content>
             </Dialog.Portal>

@@ -237,6 +237,7 @@ Tiền lưu **số nguyên VND** (`Int`), không dùng float. Mọi bảng có `
 **Khác**
 - `Review`: userId, productId (unique cặp), rating 1–5, body, locale, status, isVerifiedOwner
 - `AuditLog`: adminId, action, entity, entityId, diff (json)
+  > **Ghi chú 2026-11-26:** đổi thứ tự ảnh / video (mũi tên lên / xuống ở thẻ Ảnh & video) nay ghi action `product.media.reorder` (diff: `mediaId`, `from`, `to` (vị trí trước / sau, đếm từ 0), `sectionId`) trong cùng transaction với `reorderGallery` (`backend/src/modules/product/admin-media-repository.ts`); danh sách action của trang Nhật ký: `AUDIT_ACTIONS` (`backend/src/lib/admin/audit-rules.ts`, unit test so với code).
 
 ## 4. Thanh toán
 

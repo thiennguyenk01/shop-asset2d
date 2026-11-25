@@ -103,7 +103,7 @@ Cài một môi trường (dev; production làm lại với bucket và token ri�
 8. Đổi `STORAGE_DRIVER=r2`, khởi động lại `npm run dev`; mở Cửa hàng: địa chỉ ảnh bắt đầu bằng `R2_PUBLIC_BASE_URL`.
 
 - Mỗi lần chạy E2E tải vài file thử lên bucket dev; `npm run cron:run -- cleanup` xoá file không còn dòng nào trỏ tới sau 24 giờ.
-- Tên miền sắp có (người dùng, 2026-11-21): `asset2d.id.vn`. Đề xuất của Claude (PENDING): thêm tên miền vào Cloudflare (đổi nameserver ở nơi mua), gắn `media.asset2d.id.vn` vào bucket ảnh rồi đổi `R2_PUBLIC_BASE_URL`; bản ghi trỏ web sang Vercel để DNS only.
+- Tên miền sắp có (người dùng, 2026-11-21): `asset2d.id.vn`. Đề xuất của Claude (PENDING): thêm tên miền vào Cloudflare (đổi nameserver ở nơi mua), gắn `media.asset2d.id.vn` vào bucket ảnh rồi đổi `R2_PUBLIC_BASE_URL`; bản ghi trỏ web sang Vercel để DNS only. **Cập nhật 2026-11-26:** người dùng đã mua tên miền (ở Mắt Bão) và thêm vào Cloudflare (gói Free; nameserver `adi.ns.cloudflare.com`, `wells.ns.cloudflare.com`). Mắt Bão chưa cho đổi nameserver: báo tên miền đang bật DNSSEC, trong khi công tắc DNSSEC ghi Tắt và VNNIC không có bản ghi DS (Claude tra DNS công khai ngày 2026-11-26); người dùng thử lại sau, hoặc nhờ hỗ trợ của Mắt Bão. Cloudflare đã chép 7 bản ghi email của Mắt Bão (CNAME `autoconfig`, `autodiscover`, `cpanel`, `mail`, `webmail`; MX; TXT SPF). Đề xuất của Claude (PENDING): không dùng hộp thư của Mắt Bão thì xoá cả 7; dùng thì để 5 CNAME ở DNS only. Chưa gắn tên miền vào Vercel cho tới khi chạy thật.
 
 ## 8. Bản xem trước trên Vercel (bước 7.6)
 
@@ -125,7 +125,7 @@ Cài từ đầu:
 7. Đẩy một commit lên `main` (kể cả `git commit --allow-empty`): Vercel build bản **Preview** (nhãn Preview ở tab Deployments, trạng thái Ready). Mỗi lần đẩy lên `main` là một lần build lại. Đăng ký tài khoản trên bản thử rồi `npm run preview:grant -- <email>` để có Admin.
 
 - Bản thử không gửi email (`MAIL_DRIVER=outbox` ghi vào `/tmp`, mất khi hàm kết thúc): không thử "Quên mật khẩu"; việc định kỳ (`/api/cron/*`, đơn quá hạn, dọn file) không chạy ở bản thử: Vercel chỉ chạy lịch (`vercel.json`) ở bản production (§9).
-- Ảnh demo và file demo nằm ở bucket của bản thử; muốn dựng lại từ đầu: `npm run preview:setup` (seed tạo lại 10 bộ demo; không đụng bộ thật khác).
+- Ảnh demo và file demo nằm ở bucket của bản thử; muốn dựng lại từ đầu: `npm run preview:setup` (seed tạo lại 10 bộ demo; không đụng bộ thật khác). *(Từ 2026-11-22 bản thử có 1 đơn và 1 quyền sở hữu gắn bộ demo: bước seed của `preview:setup` bị database từ chối (khoá ngoại RESTRICT; transaction hoàn tác, dữ liệu giữ nguyên), phần migrate vẫn chạy. Muốn dựng lại từ đầu thì xoá đơn đó trước, hoặc reset nhánh Neon `preview`.)*
 - Khi làm 7.7: dự án Vercel có thể dùng chung; nhánh `production`, biến môi trường cho môi trường Production (bucket + token + nhánh Neon production riêng, `APP_ENV` / `VERCEL_ENV` = production, cổng thanh toán thật, email thật, `CRON_SECRET`), tên miền `asset2d.id.vn`; xem `docs/ROADMAP.md`.
 
 ## 9. Chạy thật (bước 7.7)
@@ -136,7 +136,7 @@ Lựa chọn: DECISIONS #55 (chuẩn bị trước phần không cần tài kho�
 
 | # | Việc | Ghi chú |
 |---|---|---|
-| 1 | Tên miền `asset2d.id.vn` | Đưa vào Cloudflare (DNS). Dùng cho 2 việc: web (gắn vào dự án Vercel) và ảnh (`media.asset2d.id.vn` gắn vào bucket ảnh R2: Cloudflare → R2 → bucket → Settings → Custom Domains). |
+| 1 | Tên miền `asset2d.id.vn` | Đưa vào Cloudflare (DNS). Dùng cho 2 việc: web (gắn vào dự án Vercel) và ảnh (`media.asset2d.id.vn` gắn vào bucket ảnh R2: Cloudflare → R2 → bucket → Settings → Custom Domains). *(2026-11-26: đã mua, đã thêm vào Cloudflare, chờ đổi nameserver; xem §7.)* |
 | 2 | Nhánh Neon `production` | Có sẵn. Chuỗi **pooled** (có `-pooler`) → `DATABASE_URL` của Vercel; chuỗi **direct** chỉ nằm trong `.env.production-db` lúc chạy `db:prod:*`. |
 | 3 | R2 của web thật | 2 bucket `asset-game-prod-public` / `asset-game-prod-private`, token riêng chỉ cho 2 bucket đó, CORS `AllowedOrigins` = địa chỉ web thật ở cả 2 bucket (như §7). |
 | 4 | SePay thật | Tài khoản SePay nối với tài khoản ngân hàng nhận tiền; `SEPAY_MODE=live`, `SEPAY_WEBHOOK_SECRET`, `SEPAY_BANK_ACCOUNT`, `SEPAY_BANK_NAME`, `SEPAY_ACCOUNT_NAME`; webhook trỏ tới `https://<web thật>/api/payments/sepay/webhook`, ký HMAC (#45). |
@@ -156,3 +156,5 @@ Lựa chọn: DECISIONS #55 (chuẩn bị trước phần không cần tài kho�
 9. Xoá `.env.production-db` khi xong. Đổi mọi khoá đã từng dán vào khung chat (dev, bản thử).
 
 **Chống tốn tiền khi bản thử mở link công khai:** Google không thấy bản thử (`robots.txt`); đã có giới hạn số lần thử theo IP (bước 7.1). Nếu bị spam: reset nhánh Neon `preview` rồi `npm run preview:setup`; hoặc bật lại Vercel Authentication (khi đó người xem phải có quyền với dự án). Theo dõi phần đã dùng của gói miễn phí: **Quản trị → Dung lượng** (#58; đo môi trường đang mở: nhánh Neon và 2 bucket của nó; Neon và R2 tính gói miễn phí chung cho mọi nhánh / bucket, nên xem thêm trang quản lý của Neon và Cloudflare).
+
+**Chỉ dùng gói miễn phí** (#59): mặc định bật ở mọi môi trường (web thật nhận cột `freeTierOnly` khi chạy `db:prod:migrate` ở bước 3). Khi bật, web chặn: Admin tải file lên khi 2 bucket của môi trường cộng file mới vượt 9 GB (90 % gói R2; R2 tính 10 GB chung cả tài khoản nên chừa chỗ cho bucket dev và bản thử); khách đăng ký, đặt đơn, mua thêm lượt tải khi database đạt 1 GB; gửi email quá 100 thư / ngày hoặc 3.000 thư / tháng. Muốn trả tiền phần vượt: **Quản trị → Cài đặt**, gõ `OPEN` rồi bấm tắt (có ghi Nhật ký); bật lại chỉ một nút. Trang **Dung lượng** cho biết chế độ đang bật hay tắt. R2 là dịch vụ duy nhất tính tiền phần vượt (tài khoản Cloudflare có thẻ); có thể đặt thêm Budget Alert (ví dụ $1) ở Cloudflare → Billing để nhận email khi phát sinh tiền (gợi ý của Claude, PENDING).

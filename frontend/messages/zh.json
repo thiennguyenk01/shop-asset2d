@@ -1515,6 +1515,7 @@
       "product_section_delete": "删除分区",
       "product_media_add": "添加图片/视频",
       "product_media_cover": "设置封面",
+      "product_media_reorder": "调整图片/视频顺序",
       "product_media_delete": "删除图片/视频",
       "product_version_create": "创建版本",
       "product_version_update": "修改版本",

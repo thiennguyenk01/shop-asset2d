@@ -102,7 +102,7 @@ describe("Admin uploads & versions (GĐ5.3)", () => {
     expect(await setAdminCover(packId, g[2].id, admin.id)).toEqual({ ok: true });
     g = await getAdminGallery(packId, null);
     expect(g.map((m) => m.kind)).toEqual(["THUMBNAIL", "IMAGE", "VIDEO"]);
-    await moveAdminMedia(packId, g[2].id, "up");
+    await moveAdminMedia(packId, g[2].id, "up", admin.id);
     expect((await getAdminGallery(packId, null)).map((m) => m.kind)).toEqual(["THUMBNAIL", "VIDEO", "IMAGE"]);
 
     // Deleting the cover promotes the next image (not the video) and removes the object.
@@ -200,7 +200,7 @@ describe("Admin uploads & versions (GĐ5.3)", () => {
   it("every step is in the audit log", async () => {
     const actions = (await db().auditLog.findMany({ where: { entityId: packId }, select: { action: true } })).map((a) => a.action);
     expect(actions).toEqual(
-      expect.arrayContaining(["product.media.add", "product.media.cover", "product.media.delete", "product.file.add", "product.version.create", "product.version.release"]),
+      expect.arrayContaining(["product.media.add", "product.media.cover", "product.media.reorder", "product.media.delete", "product.file.add", "product.version.create", "product.version.release"]),
     );
   });
 

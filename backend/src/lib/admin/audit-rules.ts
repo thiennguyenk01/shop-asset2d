@@ -18,6 +18,7 @@ export const AUDIT_ACTIONS = [
   "product.section.delete",
   "product.media.add",
   "product.media.cover",
+  "product.media.reorder",
   "product.media.delete",
   "product.version.create",
   "product.version.update",

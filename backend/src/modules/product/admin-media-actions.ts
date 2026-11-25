@@ -104,7 +104,7 @@ export async function moveMediaAction(
   if (!admin) return { ok: false, error: "forbidden" };
   if (!isId(productId) || !isId(mediaId) || (direction !== "up" && direction !== "down"))
     return { ok: false, error: "notFound" };
-  const r = await moveAdminMedia(productId, mediaId, direction);
+  const r = await moveAdminMedia(productId, mediaId, direction, admin.id);
   return r.ok ? done() : r;
 }
 

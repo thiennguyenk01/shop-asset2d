@@ -278,7 +278,12 @@ export async function setAdminCover(productId: string, mediaId: string, adminId:
 }
 
 /** Move one item one step earlier / later in its gallery (the cover stays first). */
-export async function moveAdminMedia(productId: string, mediaId: string, direction: "up" | "down"): Promise<Simple> {
+export async function moveAdminMedia(
+  productId: string,
+  mediaId: string,
+  direction: "up" | "down",
+  adminId: string,
+): Promise<Simple> {
   const m = await findMedia(productId, mediaId);
   if (!m) return { ok: false, error: "notFound" };
   const ids = (await findGallery(productId, m.sectionId)).map((r) => r.id);
@@ -286,7 +291,7 @@ export async function moveAdminMedia(productId: string, mediaId: string, directi
   const j = direction === "up" ? i - 1 : i + 1;
   if (j < 0 || j >= ids.length) return { ok: true };
   [ids[i], ids[j]] = [ids[j], ids[i]];
-  await reorderGallery(productId, m.sectionId, ids);
+  await reorderGallery(productId, m.sectionId, ids, adminId, { mediaId, from: i, to: j });
   return { ok: true };
 }
 

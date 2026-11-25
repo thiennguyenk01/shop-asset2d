@@ -142,10 +142,18 @@ export function setCoverRow(productId: string, mediaId: string, adminId: string)
   });
 }
 
-export function reorderGallery(productId: string, sectionId: string | null, order: string[]) {
+/** Moving an item is an Admin write like any other: it leaves an AuditLog row (the moved item, from → to). */
+export function reorderGallery(
+  productId: string,
+  sectionId: string | null,
+  order: string[],
+  adminId: string,
+  moved: { mediaId: string; from: number; to: number },
+) {
   return getDb().$transaction(async (tx) => {
     await renumber(tx, productId, sectionId, order);
     await tx.product.update({ where: { id: productId }, data: { updatedAt: new Date() } });
+    await audit(tx, adminId, "product.media.reorder", productId, { ...moved, sectionId });
   });
 }
 

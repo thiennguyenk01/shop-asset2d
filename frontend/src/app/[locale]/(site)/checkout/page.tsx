@@ -1,8 +1,8 @@
-import { CircleDot, ShoppingBag } from "lucide-react";
+import { CircleDot, Clock, ShoppingBag } from "lucide-react";
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getFormatter, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
-import { PlaceOrderForm } from "@/components/checkout/checkout-client";
+import { CancelOrderButton, PlaceOrderForm } from "@/components/checkout/checkout-client";
 import { DemoBanner } from "@/components/checkout/demo-banner";
 import { BenefitList } from "@/components/product/benefit-list";
 import { ProductThumb } from "@/components/product/product-thumb";
@@ -16,7 +16,7 @@ import { gatewayLimits } from "@backend/lib/payment/limits";
 import { getCurrentUser } from "@backend/auth/current-user";
 import { readCouponCode } from "@backend/modules/cart/session";
 import { placeOrderAction } from "@backend/modules/order/actions";
-import { getCheckout } from "@backend/modules/order/service";
+import { getCheckout, type OpenOrderView } from "@backend/modules/order/service";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("nav");
@@ -59,13 +59,46 @@ export default async function CheckoutPage({ params }: PageProps<"/[locale]/chec
   );
 }
 
+/**
+ * The account already has an order waiting for payment (user choice 2026-11-26): instead of "Place order", ask —
+ * pay that order, or cancel it (then this page shows the button again). MoMo orders cannot be cancelled here.
+ */
+async function OpenOrderNotice({ order, locale }: { order: OpenOrderView; locale: Locale }) {
+  const [t, format] = await Promise.all([getTranslations("checkout.openOrder"), getFormatter()]);
+  const values = {
+    code: order.code,
+    total: formatVnd(order.totalVnd, locale),
+    time: order.expiresAt ? format.dateTime(order.expiresAt, { hour: "2-digit", minute: "2-digit" }) : "—",
+  };
+  return (
+    <div role="status" className="flex flex-col gap-3 rounded-xl border border-gold-500/60 bg-gold-500/5 p-4" data-testid="open-order" data-code={order.code}>
+      <p className="flex items-start gap-2 text-sm font-semibold text-ivory-100">
+        <Clock aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-gold-300" />
+        {t("title")}
+      </p>
+      <p className="text-sm text-pretty text-ivory-300">{order.cancellable ? t("text", values) : t("momoText", values)}</p>
+      <Button asChild size="lg" className="w-full">
+        <Link href={`/checkout/result/${order.code}`} data-testid="open-order-pay">
+          {t("pay")}
+        </Link>
+      </Button>
+      {order.cancellable && (
+        <>
+          <CancelOrderButton orderCode={order.code} label={t("cancel")} />
+          <p className="text-xs text-pretty text-ivory-500">{t("transferNote")}</p>
+        </>
+      )}
+    </div>
+  );
+}
+
 async function CheckoutContent({ locale }: { locale: Locale }) {
   const user = await getCurrentUser();
   // Paying needs an account (CLAUDE.md §5); the guest cart is merged on sign-in, then we come back here.
   if (!user) redirect({ href: { pathname: "/login", query: { callbackUrl: "/checkout" } }, locale });
   const checkout = await getCheckout(user!.id, locale, await readCouponCode());
   if (!checkout) redirect({ href: { pathname: "/login", query: { callbackUrl: "/checkout" } }, locale });
-  const { summary, buyer, method, testMode, amountSupported, amountRange } = checkout!;
+  const { summary, buyer, method, testMode, amountSupported, amountRange, openOrder } = checkout!;
   const [t, tc, tp, tpp, tcommon] = await Promise.all([
     getTranslations("checkout"),
     getTranslations("cart"),
@@ -219,12 +252,18 @@ async function CheckoutContent({ locale }: { locale: Locale }) {
             </dd>
           </div>
         </dl>
-        {!amountSupported && (
-          <p role="note" className="text-sm text-pretty text-cinnabar-500 light:text-cinnabar-600" data-testid="checkout-amount-note">
-            {t("errors.amountNotSupported", gatewayLimits(locale, amountRange))}
-          </p>
+        {openOrder ? (
+          <OpenOrderNotice order={openOrder} locale={locale} />
+        ) : (
+          <>
+            {!amountSupported && (
+              <p role="note" className="text-sm text-pretty text-cinnabar-500 light:text-cinnabar-600" data-testid="checkout-amount-note">
+                {t("errors.amountNotSupported", gatewayLimits(locale, amountRange))}
+              </p>
+            )}
+            <PlaceOrderForm action={placeOrderAction.bind(null, locale)} totalVnd={summary.totalVnd} />
+          </>
         )}
-        <PlaceOrderForm action={placeOrderAction.bind(null, locale)} totalVnd={summary.totalVnd} />
         <p className="text-xs text-pretty text-ivory-500">
           {t.rich("agree", {
             terms: (c) => (

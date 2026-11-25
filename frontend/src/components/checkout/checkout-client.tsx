@@ -2,12 +2,14 @@
 
 import { Check, CheckCircle2, Copy, ShieldCheck, XCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
+import { cn } from "@/lib/cn";
 import { useRouter } from "@backend/i18n/navigation";
 import type { Locale } from "@backend/i18n/routing";
 import { gatewayLimits } from "@backend/lib/payment/limits";
-import type { PlaceOrderState } from "@backend/modules/order/actions";
+import { cancelOrderAction, type PlaceOrderState } from "@backend/modules/order/actions";
 import type { DemoPayState } from "@backend/modules/payment/actions";
 
 type PlaceOrderAction = (prev: PlaceOrderState, form: FormData) => Promise<PlaceOrderState>;
@@ -26,10 +28,44 @@ export function PlaceOrderForm({ action, totalVnd }: { action: PlaceOrderAction;
       </Button>
       {state.status === "error" && (
         <p role="alert" className="text-sm text-pretty text-cinnabar-500 light:text-cinnabar-600" data-testid="place-order-error">
-          {t(`errors.${state.reason}`, gatewayLimits(locale, state.range))}
+          {t(`errors.${state.reason}`, { ...gatewayLimits(locale, state.range), code: state.orderCode ?? "" })}
         </p>
       )}
     </form>
+  );
+}
+
+/**
+ * Cancels the buyer's own order waiting for payment (user choice 2026-11-26). The server re-checks the account and
+ * the order, then the page re-renders (checkout: the place-order button comes back; order page: "cancelled"). That
+ * render can remove this button, so the outcome is a toast (the toaster lives in the root layout), not inline text.
+ */
+export function CancelOrderButton({
+  orderCode,
+  label,
+  variant = "secondary",
+  className,
+}: {
+  orderCode: string;
+  label: string;
+  variant?: "secondary" | "ghost";
+  className?: string;
+}) {
+  const t = useTranslations("checkout.cancel");
+  const locale = useLocale();
+  const { toast } = useToast();
+  const [pending, startTransition] = useTransition();
+  const cancel = () =>
+    startTransition(async () => {
+      const result = await cancelOrderAction(locale, orderCode);
+      if (result.status === "cancelled") toast({ variant: "success", title: t("done") });
+      else toast({ variant: "error", title: t(`errors.${result.reason}`) });
+    });
+  return (
+    <Button type="button" variant={variant} className={cn("w-full", className)} disabled={pending} aria-busy={pending || undefined} onClick={cancel} data-testid="cancel-order">
+      <XCircle aria-hidden="true" className="size-4" />
+      {pending ? t("cancelling") : label}
+    </Button>
   );
 }
 

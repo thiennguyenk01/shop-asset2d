@@ -510,7 +510,9 @@
       "amountNotSupported": "当前支付方式仅接受 {min} 至 {max} 的订单。请更换优惠码或调整购物车中的素材包。",
       "paymentUnavailable": "暂时无法连接支付网关，请几分钟后再试。",
       "generic": "无法创建订单，请重试。",
-      "shopPaused": "商店已暂停接收新订单（免费额度已用完）。请稍后再来。"
+      "shopPaused": "商店已暂停接收新订单（免费额度已用完）。请稍后再来。",
+      "pendingOrder": "订单 {code} 仍在等待付款。请先支付或取消该订单，再下新订单。",
+      "couponUsedUp": "该优惠码的使用次数刚刚用完。总额已重新计算，请核对后再次确认。"
     },
     "demo": {
       "title": "演示支付网关",
@@ -596,7 +598,27 @@
       "buyer": "购买人",
       "demoBadge": "演示订单",
       "notFoundTitle": "未找到订单",
-      "notFoundText": "该订单不存在或不属于您的账号。"
+      "notFoundText": "该订单不存在或不属于您的账号。",
+      "cancelledTitle": "订单已取消",
+      "cancelledText": "此订单已取消。如果您误向此订单转账，商店会核实后为您开通资源包或退款。"
+    },
+    "openOrder": {
+      "title": "您有一个订单正在等待付款",
+      "text": "订单 {code}（{total}）保留至 {time}。请支付该订单，或取消它后用当前购物车下新订单。",
+      "momoText": "订单 {code}（{total}）通过 MoMo 支付，无法在此取消；它将在 {time} 自动过期。",
+      "pay": "支付该订单",
+      "cancel": "取消该订单并下新订单",
+      "transferNote": "如果您已为该订单转账，请不要取消：请等待几分钟，让商店收到款项。"
+    },
+    "cancel": {
+      "button": "取消此订单",
+      "cancelling": "正在取消…",
+      "done": "订单已取消。",
+      "errors": {
+        "notFound": "未找到此订单。",
+        "notOpen": "此订单已支付、已过期或已取消。",
+        "gateway": "通过 MoMo 支付的订单无法在此取消，它将自动过期。"
+      }
     }
   },
   "stats": {
@@ -661,7 +683,8 @@
       "amountNotSupported": "当前支付方式仅接受 {min} 至 {max} 的订单，因此暂时无法购买更多下载次数。",
       "paymentUnavailable": "暂时无法连接支付网关，请几分钟后再试。",
       "generic": "无法创建订单，请重试。",
-      "shopPaused": "商店已暂停接收新订单（免费额度已用完），目前无法购买更多下载次数。"
+      "shopPaused": "商店已暂停接收新订单（免费额度已用完），目前无法购买更多下载次数。",
+      "pendingOrder": "订单 {code} 仍在等待付款。请打开“订单”支付或取消该订单，然后再购买下载次数。"
     },
     "paidTitle": "已增加 {count} 次下载",
     "paidText": "“{title}”已增加 {count} 次下载。点击“立即下载”即可获取。",

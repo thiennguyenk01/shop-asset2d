@@ -57,6 +57,43 @@ function signedWebhook(request: APIRequestContext, body: Record<string, unknown>
 }
 const eventId = () => `evt_${randomBytes(12).toString("base64url")}`;
 
+test.describe("An order waiting for payment (user choice 2026-11-26)", () => {
+  test("checkout asks to pay or cancel it; cancelling brings the button back; the order shows as cancelled", async ({ page }) => {
+    await register(page);
+    const first = await orderAndOpenGateway(page, B.slug); // not paid: the order waits
+
+    await page.goto("/vi/checkout");
+    const open = visible(page, "open-order");
+    await expect(open).toHaveAttribute("data-code", first.orderCode);
+    await expect(open).toContainText(vi.checkout.openOrder.title);
+    await expect(visible(page, "place-order")).toHaveCount(0);
+
+    // "Pay that order" → its page, still waiting, with its own cancel button.
+    await open.getByTestId("open-order-pay").click();
+    await expect(page).toHaveURL(new RegExp(`/vi/checkout/result/${first.orderCode}$`));
+    await expect(visible(page, "order-status")).toHaveAttribute("data-status", "PENDING");
+    await expect(visible(page, "cancel-order")).toBeVisible();
+
+    // Back to checkout: cancel it, the place-order button comes back.
+    await page.goto("/vi/checkout");
+    await visible(page, "open-order").getByTestId("cancel-order").click();
+    await expect(toast(page, vi.checkout.cancel.done)).toBeVisible();
+    await expect(visible(page, "open-order")).toHaveCount(0);
+    await expect(visible(page, "place-order")).toBeVisible();
+
+    await page.goto(`/vi/checkout/result/${first.orderCode}`);
+    await expect(visible(page, "order-status")).toHaveAttribute("data-status", "CANCELLED");
+    await expect(visible(page, "order-status")).toContainText(vi.checkout.result.cancelledTitle);
+    await expect(visible(page, "cancel-order")).toHaveCount(0);
+
+    // A new order goes through.
+    await page.goto("/vi/checkout");
+    await visible(page, "place-order").click();
+    await expect(page).toHaveURL(/\/vi\/checkout\/demo\/demo_[A-Za-z0-9_-]+$/);
+    expect((await visible(page, "demo-order-code").textContent())!.trim()).not.toBe(first.orderCode);
+  });
+});
+
 test.describe("Checkout + Demo payment", () => {
   test("buy now → cart → checkout → demo success → pack in the library, downloadable, cart emptied, shown as owned", async ({ page }) => {
     await register(page);

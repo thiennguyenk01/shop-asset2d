@@ -510,7 +510,9 @@
       "amountNotSupported": "The current payment method only accepts orders from {min} to {max}. Change the coupon or the packs in your cart.",
       "paymentUnavailable": "Could not reach the payment gateway. Please try again in a few minutes.",
       "generic": "The order could not be created. Please try again.",
-      "shopPaused": "The shop has paused new orders (its free storage is used up). Please come back later."
+      "shopPaused": "The shop has paused new orders (its free storage is used up). Please come back later.",
+      "pendingOrder": "Order {code} is still waiting for payment. Pay it or cancel it before placing a new order.",
+      "couponUsedUp": "This coupon has just run out of uses. The total was recalculated: check it and confirm again."
     },
     "demo": {
       "title": "Demo payment gateway",
@@ -596,7 +598,27 @@
       "buyer": "Buyer",
       "demoBadge": "Demo order",
       "notFoundTitle": "Order not found",
-      "notFoundText": "It does not exist or does not belong to your account."
+      "notFoundText": "It does not exist or does not belong to your account.",
+      "cancelledTitle": "Order cancelled",
+      "cancelledText": "This order was cancelled. If you sent a bank transfer for it by mistake, the shop will check it and either give you the packs or refund you."
+    },
+    "openOrder": {
+      "title": "You have an order waiting for payment",
+      "text": "Order {code} ({total}) is held until {time}. Pay that order, or cancel it to place a new order with your current cart.",
+      "momoText": "Order {code} ({total}) is paid with MoMo, so it cannot be cancelled here; it expires on its own at {time}.",
+      "pay": "Pay that order",
+      "cancel": "Cancel it and place a new order",
+      "transferNote": "If you have already sent the bank transfer for that order, do not cancel it: wait a few minutes for the shop to receive the money."
+    },
+    "cancel": {
+      "button": "Cancel this order",
+      "cancelling": "Cancelling…",
+      "done": "Order cancelled.",
+      "errors": {
+        "notFound": "This order was not found.",
+        "notOpen": "This order is already paid, expired or cancelled.",
+        "gateway": "An order paid with MoMo cannot be cancelled here; it will expire on its own."
+      }
     }
   },
   "stats": {
@@ -661,7 +683,8 @@
       "amountNotSupported": "The current payment method only accepts orders from {min} to {max}, so more downloads cannot be bought right now.",
       "paymentUnavailable": "Could not reach the payment gateway. Please try again in a few minutes.",
       "generic": "The order could not be created. Please try again.",
-      "shopPaused": "The shop has paused new orders (its free storage is used up), so more downloads cannot be bought right now."
+      "shopPaused": "The shop has paused new orders (its free storage is used up), so more downloads cannot be bought right now.",
+      "pendingOrder": "Order {code} is still waiting for payment. Open Orders to pay or cancel it, then buy more downloads."
     },
     "paidTitle": "{count} downloads added",
     "paidText": "“{title}” has {count} more downloads. Press Download now to get it.",

@@ -11,10 +11,13 @@ import { getEnv } from "@backend/env";
 import type { AmountRange } from "@backend/lib/payment/limits";
 import { getActiveProvider } from "@backend/modules/payment/providers";
 import { readCouponCode, saveCouponCode } from "@backend/modules/cart/session";
-import { placeExtraDownloadsOrder, placeOrder, type PaymentBlock, type PlaceOrderBlock } from "./service";
+import { cancelOrder, placeExtraDownloadsOrder, placeOrder, type PaymentBlock, type PlaceOrderBlock } from "./service";
 
-/** `range`: the totals the active gateway accepts, sent with "amountNotSupported" so the message can name them. */
-export type PlaceOrderState = { status: "idle" } | { status: "error"; reason: PlaceOrderBlock; range?: AmountRange };
+/**
+ * `range`: the totals the active gateway accepts, sent with "amountNotSupported" so the message can name them ·
+ * `orderCode`: the order already waiting for payment, sent with "pendingOrder".
+ */
+export type PlaceOrderState = { status: "idle" } | { status: "error"; reason: PlaceOrderBlock; range?: AmountRange; orderCode?: string };
 
 const rangeFor = (reason: string): { range?: AmountRange } => (reason === "amountNotSupported" ? { range: getActiveProvider().amountRange } : {});
 
@@ -54,14 +57,14 @@ export async function placeOrderAction(locale: string, _prev: PlaceOrderState, f
     origin: await siteOrigin(),
   });
   if (!result.ok) {
-    refresh(); // show the current cart / prices
-    return { status: "error", reason: result.reason, ...rangeFor(result.reason) };
+    refresh(); // show the current cart / prices (and the order waiting for payment, if that is the reason)
+    return { status: "error", reason: result.reason, ...rangeFor(result.reason), ...(result.orderCode ? { orderCode: result.orderCode } : {}) };
   }
   await saveCouponCode(null);
   goToPayment(result.redirectTo, loc);
 }
 
-export type ExtraDownloadsActionResult = { status: "error"; reason: "notFound" | "notFree" | PaymentBlock; range?: AmountRange };
+export type ExtraDownloadsActionResult = { status: "error"; reason: "notFound" | "notFree" | PaymentBlock; range?: AmountRange; orderCode?: string };
 
 /**
  * "Buy N more downloads" of a free pack (step 4.6). Only the pack id comes from the client; who buys comes
@@ -76,7 +79,28 @@ export async function buyExtraDownloadsAction(locale: string, productId: string)
   const result = await placeExtraDownloadsOrder({ userId: user!.id, productId, locale: loc, origin: await siteOrigin() });
   if (!result.ok) {
     if (result.reason === "signInRequired") redirect({ href: { pathname: "/login", query: { callbackUrl: "/library" } }, locale: loc });
-    return { status: "error", reason: result.reason === "signInRequired" ? "notFound" : result.reason, ...rangeFor(result.reason) };
+    return {
+      status: "error",
+      reason: result.reason === "signInRequired" ? "notFound" : result.reason,
+      ...rangeFor(result.reason),
+      ...(result.orderCode ? { orderCode: result.orderCode } : {}),
+    };
   }
   goToPayment(result.redirectTo, loc);
+}
+
+export type CancelOrderActionResult = { status: "cancelled" } | { status: "error"; reason: "notFound" | "notOpen" | "gateway" };
+
+/**
+ * "Cancel this order" (user choice 2026-11-26: checkout asks before a new order; the order page offers it too).
+ * The account comes from the session and only its own order can be cancelled; the page then re-reads everything
+ * (the button that called it may disappear with that render, so the button shows the toast itself).
+ */
+export async function cancelOrderAction(locale: string, orderCode: string): Promise<CancelOrderActionResult> {
+  const loc = safeLocale(locale);
+  const user = await getSessionUser();
+  if (!user) redirect({ href: { pathname: "/login", query: { callbackUrl: "/orders" } }, locale: loc });
+  const result = await cancelOrder(user!.id, typeof orderCode === "string" ? orderCode : "");
+  refresh();
+  return result.ok ? { status: "cancelled" } : { status: "error", reason: result.reason };
 }

@@ -90,10 +90,94 @@ export type NewOrder = {
   }[];
 };
 
-/** Order + its lines in one write (PENDING). */
-export function insertOrder(order: NewOrder) {
+/** An order still waiting for its payment: PENDING and not past its expiry (user choice 2026-11-26). */
+const openOrderWhere = (now: Date) => ({ status: "PENDING" as const, expiresAt: { gt: now } });
+
+/** This account's order still waiting for its payment, if any (the newest one). */
+export function findOpenOrder(userId: string, now: Date) {
+  return getDb().order.findFirst({
+    where: { userId, ...openOrderWhere(now) },
+    orderBy: { createdAt: "desc" },
+    select: { code: true, totalVnd: true, expiresAt: true, payments: { select: { provider: true }, orderBy: { createdAt: "desc" }, take: 1 } },
+  });
+}
+
+export type InsertOrderResult =
+  | { ok: true; id: string; code: string }
+  | { ok: false; reason: "pendingOrder"; orderCode: string }
+  | { ok: false; reason: "couponUsedUp" };
+
+/**
+ * Order + its lines in one write (PENDING), in a transaction that first locks this account's row and, with a
+ * coupon, the coupon's row (user choice 2026-11-26):
+ * - one order waiting for payment per account: another open one → refused, the buyer pays or cancels it first;
+ * - a coupon with a limit is held by the open orders using it: paid uses + open orders must stay under the limit
+ *   (all accounts, and this account for the per-account limit). Two orders placed at the same moment wait on the
+ *   lock, so they cannot both take the last use. An order that expires or is cancelled gives its use back.
+ */
+export function insertOrder(order: NewOrder, now: Date): Promise<InsertOrderResult> {
   const { items, ...data } = order;
-  return getDb().order.create({ data: { ...data, status: "PENDING", items: { create: items } }, select: { id: true, code: true } });
+  return getDb().$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${order.userId} FOR UPDATE`;
+    const open = await tx.order.findFirst({ where: { userId: order.userId, ...openOrderWhere(now) }, select: { code: true } });
+    if (open) return { ok: false as const, reason: "pendingOrder" as const, orderCode: open.code };
+
+    if (order.couponId) {
+      await tx.$queryRaw`SELECT id FROM "Coupon" WHERE id = ${order.couponId} FOR UPDATE`;
+      const coupon = await tx.coupon.findUnique({ where: { id: order.couponId }, select: { maxUses: true, maxUsesPerUser: true, usedCount: true } });
+      if (!coupon) return { ok: false as const, reason: "couponUsedUp" as const };
+      if (coupon.maxUses !== null) {
+        const held = await tx.order.count({ where: { couponId: order.couponId, ...openOrderWhere(now) } });
+        if (coupon.usedCount + held >= coupon.maxUses) return { ok: false as const, reason: "couponUsedUp" as const };
+      }
+      if (coupon.maxUsesPerUser !== null) {
+        const [paid, held] = await Promise.all([
+          tx.couponRedemption.count({ where: { couponId: order.couponId, userId: order.userId } }),
+          tx.order.count({ where: { couponId: order.couponId, userId: order.userId, ...openOrderWhere(now) } }),
+        ]);
+        if (paid + held >= coupon.maxUsesPerUser) return { ok: false as const, reason: "couponUsedUp" as const };
+      }
+    }
+
+    const created = await tx.order.create({ data: { ...data, status: "PENDING", items: { create: items } }, select: { id: true, code: true } });
+    return { ok: true as const, ...created };
+  });
+}
+
+export type CancelOrderResult = { ok: true } | { ok: false; reason: "notFound" | "notOpen" | "gateway" };
+
+/**
+ * The buyer cancels their own order still waiting for payment (user choice 2026-11-26). Payment and order move
+ * PENDING → CANCELLED together, each conditional on PENDING: if the payment was settled meanwhile, nothing changes.
+ * A bank transfer that arrives later for this order is kept for an Admin ("unmatched", ORDER_CLOSED).
+ * MoMo is refused: its own payment page would still take the money (MoMo is paused, DECISIONS #42).
+ */
+export async function cancelOpenOrder(userId: string, code: string, now: Date): Promise<CancelOrderResult> {
+  try {
+    return await cancelOpenOrderTx(userId, code, now);
+  } catch (e) {
+    if (e instanceof OrderNoLongerOpen) return { ok: false, reason: "notOpen" };
+    throw e;
+  }
+}
+
+/** Thrown inside the transaction so the payment change rolls back when the order moved on meanwhile. */
+class OrderNoLongerOpen extends Error {}
+
+function cancelOpenOrderTx(userId: string, code: string, now: Date): Promise<CancelOrderResult> {
+  return getDb().$transaction(async (tx) => {
+    const order = await tx.order.findFirst({
+      where: { code, userId },
+      select: { id: true, status: true, expiresAt: true, payments: { select: { provider: true } } },
+    });
+    if (!order) return { ok: false as const, reason: "notFound" as const };
+    if (order.status !== "PENDING" || !order.expiresAt || order.expiresAt <= now) return { ok: false as const, reason: "notOpen" as const };
+    if (order.payments.some((p) => p.provider === "MOMO")) return { ok: false as const, reason: "gateway" as const };
+    await tx.payment.updateMany({ where: { orderId: order.id, status: "PENDING" }, data: { status: "CANCELLED" } });
+    const moved = await tx.order.updateMany({ where: { id: order.id, status: "PENDING" }, data: { status: "CANCELLED" } });
+    if (moved.count === 0) throw new OrderNoLongerOpen();
+    return { ok: true as const };
+  });
 }
 
 export function insertPayment(orderId: string, provider: ProviderId, providerTxnId: string, amountVnd: number, resumeUrl?: string) {

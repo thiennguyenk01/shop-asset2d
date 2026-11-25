@@ -510,7 +510,9 @@
       "amountNotSupported": "Cổng thanh toán đang dùng chỉ nhận đơn từ {min} đến {max}. Hãy đổi mã giảm giá hoặc số bộ trong giỏ.",
       "paymentUnavailable": "Chưa kết nối được cổng thanh toán. Vui lòng thử lại sau ít phút.",
       "generic": "Không tạo được đơn. Vui lòng thử lại.",
-      "shopPaused": "Cửa hàng tạm dừng nhận đơn mới (đã dùng hết dung lượng miễn phí). Vui lòng quay lại sau."
+      "shopPaused": "Cửa hàng tạm dừng nhận đơn mới (đã dùng hết dung lượng miễn phí). Vui lòng quay lại sau.",
+      "pendingOrder": "Bạn còn đơn {code} đang chờ thanh toán. Hãy thanh toán hoặc huỷ đơn đó trước khi đặt đơn mới.",
+      "couponUsedUp": "Mã giảm giá vừa hết lượt dùng. Tổng tiền đã được tính lại: hãy xem lại rồi xác nhận lần nữa."
     },
     "demo": {
       "title": "Cổng thanh toán Demo",
@@ -596,7 +598,27 @@
       "buyer": "Người mua",
       "demoBadge": "Đơn Demo",
       "notFoundTitle": "Không tìm thấy đơn hàng",
-      "notFoundText": "Đơn không tồn tại hoặc không thuộc tài khoản của bạn."
+      "notFoundText": "Đơn không tồn tại hoặc không thuộc tài khoản của bạn.",
+      "cancelledTitle": "Đơn đã huỷ",
+      "cancelledText": "Đơn này đã được huỷ. Nếu bạn lỡ chuyển khoản cho đơn này, cửa hàng sẽ kiểm tra rồi cấp bộ hoặc hoàn tiền."
+    },
+    "openOrder": {
+      "title": "Bạn còn một đơn đang chờ thanh toán",
+      "text": "Đơn {code} ({total}) được giữ đến {time}. Thanh toán đơn đó, hoặc huỷ đơn đó để đặt đơn mới với giỏ hàng hiện tại.",
+      "momoText": "Đơn {code} ({total}) thanh toán qua MoMo nên không huỷ được ở đây; đơn tự hết hạn lúc {time}.",
+      "pay": "Thanh toán đơn đó",
+      "cancel": "Huỷ đơn đó và đặt đơn mới",
+      "transferNote": "Đã chuyển khoản cho đơn đó thì đừng huỷ: chờ vài phút để cửa hàng nhận tiền."
+    },
+    "cancel": {
+      "button": "Huỷ đơn này",
+      "cancelling": "Đang huỷ…",
+      "done": "Đã huỷ đơn.",
+      "errors": {
+        "notFound": "Không tìm thấy đơn này.",
+        "notOpen": "Đơn này đã được thanh toán, đã hết hạn hoặc đã huỷ.",
+        "gateway": "Đơn thanh toán qua MoMo không huỷ được ở đây; đơn sẽ tự hết hạn."
+      }
     }
   },
   "stats": {
@@ -661,7 +683,8 @@
       "amountNotSupported": "Cổng thanh toán đang dùng chỉ nhận đơn từ {min} đến {max}, nên hiện không mua thêm lượt được.",
       "paymentUnavailable": "Chưa kết nối được cổng thanh toán. Vui lòng thử lại sau ít phút.",
       "generic": "Không tạo được đơn. Vui lòng thử lại.",
-      "shopPaused": "Cửa hàng tạm dừng nhận đơn mới (đã dùng hết dung lượng miễn phí), nên hiện không mua thêm lượt được."
+      "shopPaused": "Cửa hàng tạm dừng nhận đơn mới (đã dùng hết dung lượng miễn phí), nên hiện không mua thêm lượt được.",
+      "pendingOrder": "Bạn còn đơn {code} đang chờ thanh toán. Mở Đơn hàng để thanh toán hoặc huỷ đơn đó, rồi mua thêm lượt."
     },
     "paidTitle": "Đã cộng {count} lượt tải",
     "paidText": "Bộ “{title}” có thêm {count} lượt tải. Bấm Tải ngay để tải về.",

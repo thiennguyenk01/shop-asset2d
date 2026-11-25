@@ -135,6 +135,8 @@ describe("Premium pack (§7)", () => {
     expect((await db().order.findUniqueOrThrow({ where: { id: order.orderId } })).status).toBe("PENDING");
     expect(await entitlementOf(buyer.id, premium.id)).toBeNull();
     expectBlocked(await asUser(buyer.id, premium.id), "notOwned");
+    // Let it expire, so the next test can place an order (one waiting for payment per account, 2026-11-26).
+    await db().order.update({ where: { id: order.orderId }, data: { expiresAt: new Date(Date.now() - 60_000) } });
   });
 
   it("the same paid event delivered 3× at once grants once: one entitlement, one sale", async () => {

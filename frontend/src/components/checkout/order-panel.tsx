@@ -2,7 +2,7 @@ import { Download, Library, ShoppingBag, ShoppingCart } from "lucide-react";
 import { getFormatter, getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { BankTransferBox } from "@/components/checkout/bank-transfer";
-import { OrderStatusPoller } from "@/components/checkout/checkout-client";
+import { CancelOrderButton, OrderStatusPoller } from "@/components/checkout/checkout-client";
 import { DemoBanner } from "@/components/checkout/demo-banner";
 import { ProductThumb } from "@/components/product/product-thumb";
 import { Badge } from "@/components/ui/badge";
@@ -62,8 +62,7 @@ export async function OrderPanel({ code, locale, returnPath }: { code: string; l
 }
 
 async function StatusBlock({ order }: { order: OrderView }) {
-  const t = await getTranslations("checkout.result");
-  const tcart = await getTranslations("cart");
+  const [t, tcart, tc] = await Promise.all([getTranslations("checkout.result"), getTranslations("cart"), getTranslations("checkout.cancel")]);
   if (order.extraDownloadsOnly && order.status !== "PENDING") return <ExtraDownloadsStatus order={order} />;
   const toCart = (
     <Button asChild variant="secondary">
@@ -91,6 +90,10 @@ async function StatusBlock({ order }: { order: OrderView }) {
             </a>
           </Button>
         )}
+        {/* The buyer may cancel it (user choice 2026-11-26); not MoMo, whose own page would still take the money. */}
+        {order.payment?.provider !== "MOMO" && (
+          <CancelOrderButton orderCode={order.code} label={tc("button")} variant="ghost" className="mt-1 w-auto" />
+        )}
       </div>
     ),
     PAID: (
@@ -116,7 +119,7 @@ async function StatusBlock({ order }: { order: OrderView }) {
       />
     ),
     FAILED: <ErrorState title={t("failedTitle")} description={t("failedText")} action={toCart} />,
-    CANCELLED: <ErrorState title={t("failedTitle")} description={t("failedText")} action={toCart} />,
+    CANCELLED: <ErrorState title={t("cancelledTitle")} description={t("cancelledText")} action={toCart} />,
     // A SePay transfer that arrives late still settles the order (user choice 2026-11-20): say so.
     EXPIRED: (
       <ErrorState

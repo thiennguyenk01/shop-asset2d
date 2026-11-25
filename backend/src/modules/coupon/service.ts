@@ -7,6 +7,8 @@ import { getDb } from "@backend/db";
  * when an order is paid (Phase 4). Unknown / malformed codes give the same "invalid" answer.
  * With `userId`, the per-account limit (DECISIONS #35) counts this account's paid uses plus its pending orders
  * that have not expired, so a customer cannot open several pending orders to get past the limit.
+ * The overall limit also counts the orders of every account still waiting for payment (they hold a use, user
+ * choice 2026-11-26); placing the order checks it again under a lock (order/repository.ts insertOrder).
  */
 export async function checkCouponCode(
   rawCode: unknown,
@@ -32,9 +34,13 @@ export async function checkCouponCode(
       isActive: true,
     },
   });
-  const userUses =
-    coupon && userId && coupon.maxUsesPerUser !== null ? await countUserUses(coupon.id, userId, now) : null;
-  return checkCoupon(coupon, subtotalVnd, now, userUses);
+  const [userUses, held] = await Promise.all([
+    coupon && userId && coupon.maxUsesPerUser !== null ? countUserUses(coupon.id, userId, now) : null,
+    coupon && coupon.maxUses !== null
+      ? getDb().order.count({ where: { couponId: coupon.id, status: "PENDING", expiresAt: { gt: now } } })
+      : 0,
+  ]);
+  return checkCoupon(coupon && { ...coupon, usedCount: coupon.usedCount + held }, subtotalVnd, now, userUses);
 }
 
 async function countUserUses(couponId: string, userId: string, now: Date): Promise<number> {

@@ -16,14 +16,17 @@ import { toMedia, type MediaData } from "@backend/modules/product/queries";
 import { getExtraDownloadsOffer } from "@backend/modules/settings/service";
 import { getProfile } from "@backend/modules/user/service";
 import {
+  cancelOpenOrder,
   findCheckoutSnapshots,
   findCouponId,
+  findOpenOrder,
   findOrderForUser,
   findOrdersPage,
   findPackForExtraDownloads,
   insertOrder,
   insertPayment,
   markOrderFailed,
+  type CancelOrderResult,
   type NewOrder,
 } from "./repository";
 
@@ -44,16 +47,36 @@ export type CheckoutView = {
   amountSupported: boolean;
   /** Totals the active gateway accepts (for that explanation). */
   amountRange: AmountRange;
+  /**
+   * This account's order still waiting for payment (user choice 2026-11-26): no new order until the buyer pays it
+   * or cancels it. `cancellable` is false for MoMo (its own page would still take the money).
+   */
+  openOrder: OpenOrderView | null;
 };
+
+export type OpenOrderView = { code: string; totalVnd: number; expiresAt: Date | null; cancellable: boolean };
+
+export async function getOpenOrder(userId: string, now = new Date()): Promise<OpenOrderView | null> {
+  const o = await findOpenOrder(userId, now);
+  if (!o) return null;
+  return { code: o.code, totalVnd: o.totalVnd, expiresAt: o.expiresAt, cancellable: o.payments[0]?.provider !== "MOMO" };
+}
+
+/** The buyer cancels their own order waiting for payment (repository.ts cancelOpenOrder). */
+export function cancelOrder(userId: string, code: string, now = new Date()): Promise<CancelOrderResult> {
+  if (typeof code !== "string" || code.length === 0 || code.length > 32) return Promise.resolve({ ok: false, reason: "notFound" });
+  return cancelOpenOrder(userId, code, now);
+}
 
 export async function getCheckout(
   userId: string,
   locale: Locale,
   couponCode: string | null,
 ): Promise<CheckoutView | null> {
-  const [profile, summary] = await Promise.all([
+  const [profile, summary, openOrder] = await Promise.all([
     getProfile(userId),
     getCartSummary({ kind: "user", userId }, locale, couponCode),
+    getOpenOrder(userId),
   ]);
   if (!profile) return null;
   const provider = getActiveProvider();
@@ -64,19 +87,21 @@ export async function getCheckout(
     testMode: provider.testMode,
     amountSupported: amountSupported(provider.amountRange, summary.totalVnd),
     amountRange: provider.amountRange,
+    openOrder,
   };
 }
 
-export type PlaceOrderBlock = "signInRequired" | "empty" | "priceChanged" | PaymentBlock;
+export type PlaceOrderBlock = "signInRequired" | "empty" | "priceChanged" | "couponUsedUp" | PaymentBlock;
 /**
  * amountNotSupported: the gateway cannot take this total · paymentUnavailable: the gateway did not start the payment ·
- * shopPaused: "free plans only" is on and the database has reached the free allowance (no new orders).
+ * shopPaused: "free plans only" is on and the database has reached the free allowance (no new orders) ·
+ * pendingOrder: this account already has an order waiting for payment (`orderCode`), pay or cancel it first.
  */
-export type PaymentBlock = "amountNotSupported" | "paymentUnavailable" | "shopPaused";
+export type PaymentBlock = "amountNotSupported" | "paymentUnavailable" | "shopPaused" | "pendingOrder";
 
 const amountSupported = (range: { min: number; max: number }, totalVnd: number) => totalVnd >= range.min && totalVnd <= range.max;
-export type PlaceOrderResult =
-  { ok: true; orderCode: string; redirectTo: string } | { ok: false; reason: PlaceOrderBlock };
+type Placed = { ok: true; orderCode: string; redirectTo: string };
+export type PlaceOrderResult = Placed | { ok: false; reason: PlaceOrderBlock; orderCode?: string };
 
 export async function placeOrder(input: {
   userId: string;
@@ -93,6 +118,7 @@ export async function placeOrder(input: {
   const checkout = await getCheckout(input.userId, input.locale, input.couponCode);
   if (!checkout) return { ok: false, reason: "signInRequired" };
   const { summary, buyer } = checkout;
+  if (checkout.openOrder) return { ok: false, reason: "pendingOrder", orderCode: checkout.openOrder.code };
   const payable = summary.lines.filter((l) => l.state === "ok");
   if (payable.length === 0) return { ok: false, reason: "empty" };
   if (summary.totalVnd !== input.expectedTotalVnd) return { ok: false, reason: "priceChanged" };
@@ -149,21 +175,24 @@ export async function placeOrder(input: {
 }
 
 /**
- * Insert the PENDING order under a fresh readable code, then start its payment with the active provider. When
- * the gateway does not start it, the order is marked FAILED (it never reached the gateway) and the buyer is told
- * to try again; the cart is untouched.
+ * Insert the PENDING order under a fresh readable code, then start its payment with the active provider. The
+ * insert refuses a second open order of the account and a coupon whose uses are all held (repository.ts). When
+ * the gateway does not start the payment, the order is marked FAILED (it never reached the gateway) and the buyer
+ * is told to try again; the cart is untouched.
  */
 async function createOrderWithPayment(
   order: Omit<NewOrder, "code">,
   now: Date,
   origin: string | undefined,
-): Promise<{ ok: true; orderCode: string; redirectTo: string } | { ok: false; reason: "paymentUnavailable" }> {
+): Promise<Placed | { ok: false; reason: "paymentUnavailable" | "pendingOrder" | "couponUsedUp"; orderCode?: string }> {
   const provider = getActiveProvider();
   // A readable code; on the (very unlikely) collision, draw again.
   let created: { id: string; code: string } | null = null;
   for (let attempt = 0; attempt < 5 && !created; attempt++) {
     try {
-      created = await insertOrder({ ...order, code: makeOrderCode(now, randomBytes(6)) });
+      const inserted = await insertOrder({ ...order, code: makeOrderCode(now, randomBytes(6)) }, now);
+      if (!inserted.ok) return inserted;
+      created = inserted;
     } catch (e) {
       if (!(e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")) throw e;
     }
@@ -189,7 +218,7 @@ async function createOrderWithPayment(
 }
 
 export type ExtraDownloadsOrderResult =
-  { ok: true; orderCode: string; redirectTo: string } | { ok: false; reason: "signInRequired" | ExtraDownloadsBlock | PaymentBlock };
+  Placed | { ok: false; reason: "signInRequired" | ExtraDownloadsBlock | PaymentBlock; orderCode?: string };
 
 /**
  * "Buy more downloads" for one free pack (CLAUDE.md §5, step 4.6): no cart, no coupon — one order line of kind
@@ -219,7 +248,7 @@ export async function placeExtraDownloadsOrder(input: {
   const price = offer.priceVnd;
   const provider = getActiveProvider();
   if (!amountSupported(provider.amountRange, price)) return { ok: false, reason: "amountNotSupported" };
-  return createOrderWithPayment(
+  const result = await createOrderWithPayment(
     {
       userId: input.userId,
       subtotalVnd: price,
@@ -256,6 +285,8 @@ export async function placeExtraDownloadsOrder(input: {
     now,
     input.origin,
   );
+  // No coupon here, so never "couponUsedUp".
+  return result.ok || result.reason !== "couponUsedUp" ? (result as ExtraDownloadsOrderResult) : { ok: false, reason: "paymentUnavailable" };
 }
 
 export type OrderView = {

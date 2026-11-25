@@ -46,7 +46,8 @@ export function BuyDownloadsButton({
       try {
         // Success: the action redirects to the payment gateway (Next navigates). Failures come back as data.
         const result = await buyExtraDownloadsAction(locale, productId);
-        if (result?.status === "error") toast({ variant: "error", title: t(`errors.${result.reason}`, gatewayLimits(locale as Locale, result.range)) });
+        if (result?.status === "error")
+          toast({ variant: "error", title: t(`errors.${result.reason}`, { ...gatewayLimits(locale as Locale, result.range), code: result.orderCode ?? "" }) });
       } catch (e) {
         if (!isRedirect(e)) toast({ variant: "error", title: t("errors.generic") });
       }

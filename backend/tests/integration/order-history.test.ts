@@ -19,8 +19,12 @@ beforeAll(async () => {
   for (let i = 0; i < ORDERS; i += 1) {
     // An unpaid order leaves its line in the cart, so the same pack can be ordered again.
     const placed = await placePendingOrder(buyer.id, pack.id, 90_000);
-    // Distinct, increasing creation times so "newest first" is unambiguous.
-    await db().order.update({ where: { id: placed.orderId }, data: { createdAt: new Date(Date.UTC(2026, 0, 1, 0, i)) } });
+    // Distinct, increasing creation times so "newest first" is unambiguous; past their expiry, like the orders of a
+    // real history, so the next one can be placed (one order waiting for payment per account, 2026-11-26).
+    await db().order.update({
+      where: { id: placed.orderId },
+      data: { createdAt: new Date(Date.UTC(2026, 0, 1, 0, i)), expiresAt: new Date(Date.UTC(2026, 0, 1, 0, i + 30)) },
+    });
     codes.unshift(placed.code);
   }
 }, 120_000);

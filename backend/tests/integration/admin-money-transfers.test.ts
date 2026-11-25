@@ -53,10 +53,11 @@ describe("order money, for the list filters", () => {
     // One pack per order: a PENDING order leaves its pack in the cart, so empty the cart before the next one.
     const emptyCart = () => db().cartItem.deleteMany({ where: { cart: { userId: buyer.id } } });
     await emptyCart();
-    const waiting = await placePendingOrder(buyer.id, pack2.id, 80_000);
-    await emptyCart();
+    // The overdue one first: an account has one order waiting for payment at a time (2026-11-26).
     const overdue = await placePendingOrder(buyer.id, pack3.id, 50_000);
     await db().order.update({ where: { id: overdue.orderId }, data: { expiresAt: new Date(Date.now() - 60_000) } });
+    await emptyCart();
+    const waiting = await placePendingOrder(buyer.id, pack2.id, 80_000);
     // The Demo gateway marks orders Demo: make two of them "real" to see both buckets.
     await db().order.updateMany({ where: { id: { in: [paid.orderId, waiting.orderId] } }, data: { isDemo: false } });
 

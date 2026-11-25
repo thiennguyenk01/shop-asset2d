@@ -226,7 +226,8 @@ describe("Settings: the more-downloads offer (DECISIONS #35)", () => {
       extraDownloads: { before: { count: 2, priceVnd: 10_000 }, after: { count: 3, priceVnd: 15_000 } },
     });
 
-    const fresh = await placeExtraDownloads(customer.id, free.id);
+    // Another account: this one already has an order waiting for payment (one at a time, 2026-11-26).
+    const fresh = await placeExtraDownloads((await createUser(tag, "extra2")).id, free.id);
     if (!fresh.ok) throw new Error(fresh.reason);
     expect(fresh.totalVnd).toBe(15_000);
     expect(fresh.items).toEqual([{ kind: "EXTRA_DOWNLOADS", extraDownloads: 3 }]);

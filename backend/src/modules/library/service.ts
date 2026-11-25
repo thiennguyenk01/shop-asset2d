@@ -1,5 +1,6 @@
 import "server-only";
 import type { Locale } from "@backend/i18n/routing";
+import { changelogText, hasNewVersionSince } from "@backend/lib/catalog/changelog";
 import { pickTranslation } from "@backend/lib/format";
 import { getFreeDownloadQuotas, type FreeDownloadQuota } from "@backend/modules/download/service";
 import { toMedia, type MediaData } from "@backend/modules/product/queries";
@@ -22,6 +23,11 @@ export type LibraryItem = {
   acquiredAt: Date;
   version: { version: string; releasedAt: Date | null } | null;
   lastDownloadedAt: Date | null;
+  /**
+   * The current version went out after this owner's last download of the pack (user choice 2026-11-26): the card
+   * says "New version" with that version's note (another language when not written in this one).
+   */
+  newVersion: { version: string; note: string | null } | null;
   /** HIDDEN / DRAFT packs stay listed but cannot be downloaded (CLAUDE.md §7). */
   downloadable: boolean;
   /** Free pack: downloads left of the account's quota (CLAUDE.md §5); Premium: null (unlimited). */
@@ -39,28 +45,36 @@ export async function getLibrary(userId: string, locale: Locale): Promise<{ item
   const freeIds = rows.filter((r) => r.product.type === "FREE").map((r) => r.product.id);
   const [last, quotas] = await Promise.all([findLastDownloads(userId, productIds), getFreeDownloadQuotas(userId, freeIds)]);
   return {
-    items: rows.map((r) => ({
-      productId: r.product.id,
-      slug: r.product.slug,
-      title: pickTranslation(r.product.translations, locale)?.title ?? r.product.slug,
-      type: r.product.type,
-      source: r.source,
-      orderCode: r.order?.code ?? null,
-      isDemoData: r.product.isDemoData,
-      thumbnail: r.product.media[0] ? toMedia(r.product.media[0]) : null,
-      acquiredAt: r.grantedAt,
-      version: r.product.currentVersion,
-      lastDownloadedAt: last.get(r.product.id) ?? null,
-      downloadable: r.product.status === "PUBLISHED",
-      freeDownloads: quotas.get(r.product.id) ?? null,
-      benefits: {
-        commercial: r.license.allowCommercial,
-        modification: r.license.allowModification,
-        multiProject: r.license.allowMultiProject,
-        redistribution: r.license.allowRedistribution,
-        resale: r.license.allowResale,
-      },
-    })),
+    items: rows.map((r) => {
+      const current = r.product.currentVersion;
+      const lastDownloadedAt = last.get(r.product.id) ?? null;
+      return {
+        productId: r.product.id,
+        slug: r.product.slug,
+        title: pickTranslation(r.product.translations, locale)?.title ?? r.product.slug,
+        type: r.product.type,
+        source: r.source,
+        orderCode: r.order?.code ?? null,
+        isDemoData: r.product.isDemoData,
+        thumbnail: r.product.media[0] ? toMedia(r.product.media[0]) : null,
+        acquiredAt: r.grantedAt,
+        version: current ? { version: current.version, releasedAt: current.releasedAt } : null,
+        lastDownloadedAt,
+        newVersion:
+          current && hasNewVersionSince(current.releasedAt, lastDownloadedAt)
+            ? { version: current.version, note: changelogText(current.changelog, locale) }
+            : null,
+        downloadable: r.product.status === "PUBLISHED",
+        freeDownloads: quotas.get(r.product.id) ?? null,
+        benefits: {
+          commercial: r.license.allowCommercial,
+          modification: r.license.allowModification,
+          multiProject: r.license.allowMultiProject,
+          redistribution: r.license.allowRedistribution,
+          resale: r.license.allowResale,
+        },
+      };
+    }),
     history: history.map((h) => ({
       id: h.id,
       at: h.createdAt,

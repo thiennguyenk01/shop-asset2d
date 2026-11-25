@@ -1,4 +1,4 @@
-import { ChevronDown, Gift, History, Info } from "lucide-react";
+import { ChevronDown, Gift, History, Info, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -197,6 +197,17 @@ async function LibraryRow({
             {/* "Free" already says how a free pack got here; bought / gifted packs say so. */}
             {item.source !== "FREE_CLAIM" && <Badge variant="neutral">{t(`source.${item.source}`)}</Badge>}
             {item.isDemoData && <Badge variant="demo">{tp("demoData")}</Badge>}
+            {/* A version released after this owner's last download (user choice 2026-11-26). */}
+            {item.newVersion && (
+              <Badge
+                variant="neutral"
+                className="inline-flex items-center gap-1 text-gold-300"
+                data-testid="library-new-version"
+              >
+                <Sparkles aria-hidden="true" className="size-3" />
+                {t("newVersion", { version: item.newVersion.version })}
+              </Badge>
+            )}
           </div>
           <Link href={`/product/${item.slug}`} className="font-medium text-pretty text-ivory-100 hover:text-gold-300">
             {item.title}
@@ -235,6 +246,28 @@ async function LibraryRow({
         </div>
         {item.downloadable && <div className="hidden shrink-0 sm:block">{action}</div>}
       </div>
+      {item.newVersion && (
+        <details
+          className="group rounded-xl border border-gold-500/30 bg-gold-500/5 px-3 py-2 sm:ml-36"
+          data-testid="library-whats-new"
+        >
+          <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs font-medium text-gold-300 [&::-webkit-details-marker]:hidden">
+            {t("whatsNew", { version: item.newVersion.version })}
+            <ChevronDown aria-hidden="true" className="size-3.5 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="flex flex-col gap-2 pt-2">
+            <p className="text-sm whitespace-pre-line text-pretty text-ivory-300">
+              {item.newVersion.note ?? <span className="text-ivory-500">{tpp("changesNoNote")}</span>}
+            </p>
+            <Link
+              href={`/product/${item.slug}#changes`}
+              className="self-start text-xs font-medium text-gold-300 underline-offset-2 hover:underline"
+            >
+              {t("allVersions")}
+            </Link>
+          </div>
+        </details>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-2 sm:pl-36">
         <details className="group min-w-0 flex-1">
           <summary className="inline-flex cursor-pointer list-none items-center gap-1 rounded-lg py-1 text-xs font-medium text-ivory-300 hover:text-ivory-100 [&::-webkit-details-marker]:hidden">

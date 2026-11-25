@@ -374,7 +374,14 @@
     "viewerCounter": "{index} / {total}",
     "viewerPrev": "Previous picture",
     "viewerNext": "Next picture",
-    "viewerClose": "Close the viewer"
+    "viewerClose": "Close the viewer",
+    "changesTitle": "What's new",
+    "changesIntro": "Released versions, newest first.",
+    "changesVersion": "Version {version}",
+    "changesCurrent": "Current",
+    "changesReleased": "Released {date}",
+    "changesNoNote": "No notes for this version.",
+    "changesLink": "What's new"
   },
   "contactChat": {
     "open": "Contact support",
@@ -478,7 +485,10 @@
     "historyTitle": "Download history",
     "historyIntro": "{count, plural, one {Your latest download} other {Your latest # downloads}}",
     "historyEmpty": "No downloads yet.",
-    "orderLink": "Order {code}"
+    "orderLink": "Order {code}",
+    "newVersion": "New version {version}",
+    "whatsNew": "What's new in {version}",
+    "allVersions": "See all versions"
   },
   "checkout": {
     "demoBanner": "DEMO MODE — no real transactions",

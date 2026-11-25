@@ -2,6 +2,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import type { Prisma } from "@backend/generated/prisma/client";
 import type { Locale } from "@backend/i18n/routing";
+import { changelogText } from "@backend/lib/catalog/changelog";
 import { SHOP_PAGE_SIZE, toSearchSlug, type ShopParams, type ShopSort } from "@backend/lib/catalog/shop-params";
 import { pickTranslation } from "@backend/lib/format";
 import { getDb } from "@backend/db";
@@ -223,8 +224,15 @@ export type ProductDetail = Omit<ProductCardData, "thumbnail" | "sectionCount" |
   genres: FacetOption[];
   styles: FacetOption[];
   version: { version: string; releasedAt: Date | null } | null;
+  /** "What's new" (user choice 2026-11-26): released versions, newest first; `note` falls back to another language. */
+  releases: PackRelease[];
   license: { code: string; name: string; summary: string; terms: string; flags: LicenseFlags } | null;
 };
+
+export type PackRelease = { version: string; releasedAt: Date; note: string | null; current: boolean };
+
+/** How many released versions the pack page lists. */
+export const RELEASES_SHOWN = 20;
 
 /** One pack visible in `locale` with its sections, or null (unknown slug / not published / not written in it → 404). */
 export async function getProductDetail(locale: Locale, slug: string): Promise<ProductDetail | null> {
@@ -252,6 +260,13 @@ export async function getProductDetail(locale: Locale, slug: string): Promise<Pr
       genres: { include: { genre: { select: { slug: true, sortOrder: true, translations: nameTr } } } },
       artStyles: { include: { artStyle: { select: { slug: true, sortOrder: true, translations: nameTr } } } },
       currentVersion: { select: { version: true, releasedAt: true } },
+      // A draft version (not released yet) is never shown to customers.
+      versions: {
+        where: { releasedAt: { not: null } },
+        orderBy: [{ releasedAt: "desc" }, { createdAt: "desc" }],
+        take: RELEASES_SHOWN,
+        select: { id: true, version: true, releasedAt: true, changelog: true },
+      },
       licenses: {
         where: { isDefault: true },
         take: 1,
@@ -303,6 +318,12 @@ export async function getProductDetail(locale: Locale, slug: string): Promise<Pr
     genres: row.genres.map((g) => named(g.genre)).sort(bySort).map(({ slug, name }) => ({ slug, name })),
     styles: row.artStyles.map((s) => named(s.artStyle)).sort(bySort).map(({ slug, name }) => ({ slug, name })),
     version: row.currentVersion,
+    releases: row.versions.map((v) => ({
+      version: v.version,
+      releasedAt: v.releasedAt!,
+      note: changelogText(v.changelog, locale),
+      current: v.id === row.currentVersionId,
+    })),
     license:
       lic && licT
         ? {

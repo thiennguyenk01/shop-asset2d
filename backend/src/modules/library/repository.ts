@@ -22,7 +22,7 @@ export function findLibraryEntitlements(userId: string, locale: Locale) {
           isDemoData: true,
           translations: { where: { locale: { in: localesFor(locale) } }, select: { locale: true, title: true } },
           media: { where: { kind: "THUMBNAIL", sectionId: null }, orderBy: { sortOrder: "asc" }, take: 1, select: MEDIA_SELECT },
-          currentVersion: { select: { version: true, releasedAt: true } },
+          currentVersion: { select: { version: true, releasedAt: true, changelog: true } },
         },
       },
     },

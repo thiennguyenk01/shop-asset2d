@@ -1,4 +1,4 @@
-import { Check, Info, ShieldCheck } from "lucide-react";
+import { Check, History, Info, ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
@@ -103,18 +103,25 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/produ
   const navItems: SectionNavItem[] = [
     { id: "overview", label: t("overview"), icon: "overview" },
     ...product.sections.map((s) => ({ id: `sec-${s.slug}`, label: s.name, icon: s.icon ?? "" })),
+    // "What's new" (user choice 2026-11-26): before Benefits, only when a version is released.
+    ...(product.releases.length > 0 ? [{ id: "changes", label: t("changesTitle"), icon: "changes" }] : []),
     { id: "benefits", label: t("benefitsTitle"), icon: "benefits" },
     { id: "reviews", label: t("reviewsTitle"), icon: "reviews" },
   ];
 
   // Buy column (user request 2026-11-15: everything visible without scrolling to the end of the page):
   // the numbers as a 2×2 grid right under the buy button, the rest as one-line rows.
-  const keyFacts: { label: string; value: string; testId: string }[] = [
+  const keyFacts: { label: string; value: string; testId: string; link?: { href: string; label: string } }[] = [
     { label: t("totalAssets"), value: format.number(product.assetCount), testId: "fact-total-assets" },
     { label: t("sectionCount"), value: format.number(product.sections.length), testId: "fact-sections" },
     ...(product.version
       ? [
-          { label: t("version"), value: product.version.version, testId: "fact-version" },
+          {
+            label: t("version"),
+            value: product.version.version,
+            testId: "fact-version",
+            ...(product.releases.length > 0 ? { link: { href: "#changes", label: t("changesLink") } } : {}),
+          },
           // A pack on sale always has a released version; the date is skipped rather than invented otherwise.
           ...(product.version.releasedAt
             ? [
@@ -229,6 +236,17 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/produ
                     >
                       {f.value}
                     </dd>
+                    {f.link && (
+                      <dd>
+                        <a
+                          href={f.link.href}
+                          className="text-xs font-medium text-gold-300 underline-offset-2 hover:underline"
+                          data-testid="changes-link"
+                        >
+                          {f.link.label}
+                        </a>
+                      </dd>
+                    )}
                   </div>
                 ))}
               </dl>
@@ -349,6 +367,60 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/produ
                 </p>
               ))}
             </section>
+
+            {product.releases.length > 0 && (
+              <section
+                id="changes"
+                aria-labelledby="changes-title"
+                className="flex scroll-mt-20 flex-col gap-4 rounded-2xl border border-bronze-700 bg-ink-900 p-5"
+                data-testid="pack-changes"
+              >
+                <header className="flex flex-col gap-1">
+                  <h2 id="changes-title" className="text-lg font-semibold text-ivory-100">
+                    {t("changesTitle")}
+                  </h2>
+                  <p className="text-sm text-pretty text-ivory-500">{t("changesIntro")}</p>
+                </header>
+                <ol className="flex flex-col">
+                  {product.releases.map((r, i) => (
+                    <li
+                      key={r.version}
+                      className="grid grid-cols-[1.25rem_minmax(0,1fr)] gap-x-3"
+                      data-testid="pack-release"
+                      data-version={r.version}
+                    >
+                      {/* A small timeline: a dot per version, joined by a line down to the next one. */}
+                      <div aria-hidden="true" className="flex flex-col items-center">
+                        <span
+                          className={`mt-1 grid size-5 shrink-0 place-items-center rounded-full ${r.current ? "bg-gold-500/15 text-gold-300" : "bg-ink-800 text-ivory-500"}`}
+                        >
+                          <History className="size-3" />
+                        </span>
+                        {i < product.releases.length - 1 && <span className="w-px flex-1 bg-bronze-700" />}
+                      </div>
+                      <div className={`flex min-w-0 flex-col gap-1 ${i < product.releases.length - 1 ? "pb-5" : ""}`}>
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                          <h3 className="text-base font-semibold text-ivory-100 tabular-nums">
+                            {t("changesVersion", { version: r.version })}
+                          </h3>
+                          {r.current && <Badge variant="neutral">{t("changesCurrent")}</Badge>}
+                          <span className="text-xs text-ivory-500 tabular-nums">
+                            {t("changesReleased", { date: format.dateTime(r.releasedAt, { dateStyle: "medium" }) })}
+                          </span>
+                        </div>
+                        {r.note ? (
+                          <p className="max-w-[75ch] text-sm leading-relaxed whitespace-pre-line text-pretty text-ivory-300">
+                            {r.note}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-ivory-500">{t("changesNoNote")}</p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )}
 
             {product.license && (
               <section

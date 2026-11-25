@@ -8,6 +8,7 @@ import {
   Flame,
   Grid3x3,
   Hammer,
+  History,
   LayoutGrid,
   LayoutPanelTop,
   Map,
@@ -55,6 +56,7 @@ const ICONS: Record<string, LucideIcon> = {
   // In-page anchors that are not categories.
   overview: LayoutGrid,
   benefits: BadgeCheck,
+  changes: History,
   reviews: MessageSquareText,
 };
 

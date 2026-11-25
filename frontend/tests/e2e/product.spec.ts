@@ -41,7 +41,7 @@ test.describe("Product page", () => {
     await page.goto(`/vi/product/${SLUG}`);
     const nav = page.getByTestId("section-nav");
     await expect(nav).toBeVisible();
-    await expect(nav.getByRole("link")).toHaveCount(21 + 3); // overview + sections + benefits + reviews
+    await expect(nav.getByRole("link")).toHaveCount(21 + 4); // overview + sections + what's new + benefits + reviews
 
     const viewport = page.viewportSize()!;
     // Desktop: flush with the bottom of the viewport. Mobile: sits right on top of the bottom tab bar.
@@ -81,7 +81,31 @@ test.describe("Product page", () => {
     await page.goto("/vi/product/khoi-dau-tien-hiep");
     await expect(page.getByRole("button", { name: vi.productPage.downloadFree })).toBeVisible();
     await expect(page.getByRole("button", { name: vi.productPage.buyNow })).toHaveCount(0);
-    await expect(page.getByTestId("section-nav").getByRole("link")).toHaveCount(8 + 3);
+    await expect(page.getByTestId("section-nav").getByRole("link")).toHaveCount(8 + 4);
+  });
+
+  test("what's new: released versions newest first, the current one marked, reached from the buy column (2026-11-26)", async ({ page }) => {
+    // Seed: this pack has 1.0.0 then 1.3.0, both released, each with a note in 3 languages.
+    await page.goto(`/vi/product/${SLUG}`);
+    const changes = page.getByTestId("pack-changes");
+    await expect(changes.getByRole("heading", { level: 2 })).toHaveText(vi.productPage.changesTitle);
+    const releases = changes.getByTestId("pack-release");
+    await expect(releases).toHaveCount(2);
+    await expect(releases.nth(0)).toHaveAttribute("data-version", "1.3.0");
+    await expect(releases.nth(0)).toContainText(vi.productPage.changesCurrent);
+    await expect(releases.nth(0)).toContainText("Thêm hoạt ảnh và sửa lỗi nhỏ (demo).");
+    await expect(releases.nth(1)).toHaveAttribute("data-version", "1.0.0");
+    await expect(releases.nth(1)).toContainText("Phát hành lần đầu.");
+    await expect(releases.nth(1)).not.toContainText(vi.productPage.changesCurrent);
+
+    const link = page.getByTestId("fact-version").getByTestId("changes-link");
+    await expect(link).toHaveText(vi.productPage.changesLink);
+    await link.click();
+    await expect(page).toHaveURL(/#changes$/);
+    await expect(changes.getByRole("heading", { level: 2 })).toBeInViewport();
+
+    await page.goto(`/zh/product/${SLUG}`);
+    await expect(page.getByTestId("pack-changes").getByTestId("pack-release").nth(1)).toContainText("首次发布。");
   });
 
   test("Chinese product page is translated", async ({ page }) => {

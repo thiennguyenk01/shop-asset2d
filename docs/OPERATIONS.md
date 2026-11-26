@@ -160,6 +160,8 @@ Lựa chọn: DECISIONS #55 (chuẩn bị trước phần không cần tài kho�
 
 **Chỉ dùng gói miễn phí** (#59): mặc định bật ở mọi môi trường (web thật nhận cột `freeTierOnly` khi chạy `db:prod:migrate` ở bước 3). Khi bật, web chặn: Admin tải file lên khi 2 bucket của môi trường cộng file mới vượt 9 GB (90 % gói R2; R2 tính 10 GB chung cả tài khoản nên chừa chỗ cho bucket dev và bản thử); khách đăng ký, đặt đơn, mua thêm lượt tải khi database đạt 1 GB; gửi email quá 100 thư / ngày hoặc 3.000 thư / tháng. Muốn trả tiền phần vượt: **Quản trị → Cài đặt**, gõ `OPEN` rồi bấm tắt (có ghi Nhật ký); bật lại chỉ một nút. Trang **Dung lượng** cho biết chế độ đang bật hay tắt. R2 là dịch vụ duy nhất tính tiền phần vượt (tài khoản Cloudflare có thẻ); có thể đặt thêm Budget Alert (ví dụ $1) ở Cloudflare → Billing để nhận email khi phát sinh tiền (gợi ý của Claude, PENDING).
 
+**Kênh liên hệ của nút chat** (#65): nhập ở Quản trị → Cài đặt → "Liên hệ (nút chat)". Cột `ShopSettings.contactChannels` vào web thật khi chạy `db:prod:migrate` ở bước 3; bản thử cần `npm run preview:setup` (§8). Chưa điền kênh nào thì nút chat không hiện.
+
 ## 10. Đăng nhập bằng Google (DECISIONS #63)
 
 Nút "Tiếp tục với Google" chỉ hiện khi môi trường có đủ `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET`. Mỗi môi trường (dev, bản thử, web thật) điền khoá riêng của nó; không gửi khoá qua chat.

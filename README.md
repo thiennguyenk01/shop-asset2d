@@ -1,229 +1,360 @@
+<div align="center">
+
 # Asset Game MMORPG 2D
 
-Chợ tài nguyên đồ họa game 2D (HD Pixel Art, phong cách phương Đông): xem trước, mua, tải về, thư viện cá nhân và khu quản trị (Admin). Giao diện 3 ngôn ngữ: Tiếng Việt (mặc định), English, 中文.
+**A complete marketplace for HD pixel-art 2D game assets in an Eastern-fantasy style**
+(Xianxia · Wuxia · Xuanhuan · Eastern mythology · Dark fantasy · MMORPG/RPG 2D)
 
-Công nghệ: Next.js 16 · Prisma 7 · PostgreSQL trên Neon · Cloudflare R2 · Auth.js v5 · next-intl · Tailwind.
+**English** · [Tiếng Việt](README.vi.md)
 
-Tài liệu chi tiết: [docs/](docs/) (sản phẩm, kiến trúc, lộ trình, quyết định đã xác nhận, vận hành) và [docs/DESIGN.md](docs/DESIGN.md) (giao diện). Quy tắc làm việc của dự án: [CLAUDE.md](CLAUDE.md).
+</div>
 
-## Mục lục
+![Shop page](docs/images/readme/shop.webp)
 
-1. [Yêu cầu](#1-yêu-cầu)
-2. [Chạy trên máy (phát triển)](#2-chạy-trên-máy-phát-triển)
-3. [Cấu hình biến môi trường](#3-cấu-hình-biến-môi-trường)
-4. [Dữ liệu demo](#4-dữ-liệu-demo)
-5. [Cấp và thu quyền Admin](#5-cấp-và-thu-quyền-admin)
-6. [Cloudflare R2 (lưu file)](#6-cloudflare-r2-lưu-file)
-7. [Bản thử trên Vercel](#7-bản-thử-trên-vercel)
-8. [Các lệnh](#8-các-lệnh)
-9. [Kiểm thử](#9-kiểm-thử)
-10. [Lỗi thường gặp](#10-lỗi-thường-gặp)
-11. [Quy tắc bắt buộc](#11-quy-tắc-bắt-buộc)
+This is a full e-commerce platform, not a landing page. Buyers search and preview asset packs, pay for them, then download them again from a personal library. The shop owner runs everything from an Admin area. The whole interface is available in **Vietnamese, English and Chinese**.
 
-## 1. Yêu cầu
+The repository ships as a **ready-to-run demo**. Every value in `.env.example` is a safe default, and `npm run db:seed` fills the shop with 10 demo packs, 21 categories and demo coupons. You can run the whole project on your own computer **without any cloud account**, then add real services (Neon, Cloudflare R2, Vercel, SePay, Resend, Google sign-in) when you need them.
 
-- **Node.js 20.9 trở lên** và npm (kiểm tra: `node -v`).
-- **Git**.
-- **Tài khoản Neon** (PostgreSQL miễn phí): tạo project, rồi tạo nhánh `dev` riêng cho máy bạn. Không dùng nhánh `production` để phát triển.
-- **Tài khoản Cloudflare** (R2) chỉ cần khi muốn dùng R2. Chạy trên máy có thể dùng driver `local` (không cần Cloudflare).
-- **Tài khoản Vercel** chỉ cần khi đưa bản thử lên mạng (mục 7).
+> All demo content (pictures, prices, specs) is clearly marked **DEMO** on screen and is not a real product.
 
-## 2. Chạy trên máy (phát triển)
+## Contents
 
-Chạy mọi lệnh từ **thư mục gốc** của repo.
+1. [Screenshots](#screenshots)
+2. [Features](#features)
+3. [What makes it special](#what-makes-it-special)
+4. [Tech stack](#tech-stack)
+5. [Quick start (local, no cloud account)](#quick-start-local-no-cloud-account)
+6. [Using the app](#using-the-app)
+7. [Configuration](#configuration)
+8. [Optional services and going live](#optional-services-and-going-live)
+9. [Commands](#commands)
+10. [Testing](#testing)
+11. [Project structure](#project-structure)
+12. [Troubleshooting](#troubleshooting)
+13. [Documentation and license](#documentation-and-license)
+
+## Screenshots
+
+### Storefront
+
+| Pack page                                     | Phone                                                   |
+| --------------------------------------------- | ------------------------------------------------------- |
+| ![Pack page](docs/images/readme/product.webp) | ![Shop on a phone](docs/images/readme/mobile-shop.webp) |
+
+| Light theme                                        | Phone: pack page                                                |
+| -------------------------------------------------- | --------------------------------------------------------------- |
+| ![Light theme](docs/images/readme/shop-light.webp) | ![Pack page on a phone](docs/images/readme/mobile-product.webp) |
+
+### Three languages
+
+| English                                     | 中文                                        |
+| ------------------------------------------- | ------------------------------------------- |
+| ![English](docs/images/readme/shop-en.webp) | ![Chinese](docs/images/readme/shop-zh.webp) |
+
+### Buying
+
+| Cart with a coupon                    | Checkout                                      |
+| ------------------------------------- | --------------------------------------------- |
+| ![Cart](docs/images/readme/cart.webp) | ![Checkout](docs/images/readme/checkout.webp) |
+
+| Demo payment gateway                                  | Paid order                                        |
+| ----------------------------------------------------- | ------------------------------------------------- |
+| ![Demo gateway](docs/images/readme/demo-gateway.webp) | ![Paid order](docs/images/readme/order-paid.webp) |
+
+| Personal library                            |
+| ------------------------------------------- |
+| ![Library](docs/images/readme/library.webp) |
+
+### Admin
+
+| Overview and revenue chart                                | Pack editor                                                |
+| --------------------------------------------------------- | ---------------------------------------------------------- |
+| ![Admin overview](docs/images/readme/admin-overview.webp) | ![Pack editor](docs/images/readme/admin-product-edit.webp) |
+
+| Orders and finance                                    | Settings                                                  |
+| ----------------------------------------------------- | --------------------------------------------------------- |
+| ![Admin orders](docs/images/readme/admin-orders.webp) | ![Admin settings](docs/images/readme/admin-settings.webp) |
+
+## Features
+
+### Storefront
+
+- **Shop:** search by name (with or without Vietnamese accents), filter by type (Free / Premium), genre, art style and price range, and sort by newest, best-selling or price. Results are paginated.
+- **Pack page:** gallery with a full-screen viewer, image or video previews, total asset count, sections (characters, maps, tilesets, monsters, skills and so on), file formats, compatible software, version, and a "What's new" note for each version. A bar at the bottom jumps to each section.
+- **Benefits per pack:** each pack lists what the buyer may do with it, Free and Premium separately, instead of generic license names.
+- **Free packs:** shown as FREE. Signing in is required to download. Each account gets 2 downloads per Free pack and can buy more (the price is set in Admin).
+- **Premium packs:** "Buy now" or "Add to cart". After payment the pack is in the library with unlimited downloads.
+- **Contact chat button:** Messenger, Zalo, hotline, Telegram and email, entered by the Admin. Each channel can be turned on or off. When no channel is filled in, the button is hidden.
+- **Info pages:** About, FAQ, Terms of use, Privacy policy, Refund policy (template content to edit before selling).
+
+### Buying and payment
+
+- **Cart** for guests and signed-in users (a guest cart merges into the account on sign-in), with **coupons** (percent or fixed amount, minimum order, dates, use limit).
+- **Checkout:** prices and totals are always recomputed on the server. One unpaid order per account at a time; the buyer can pay it or cancel it.
+- **Payment gateways**, chosen with `PAYMENT_PROVIDER`:
+  - `demo` (default): a simulated gateway with a "Demo mode" banner. No money moves. It is refused in production.
+  - `sepay`: VietQR bank transfer. The order is matched by a signed SePay webhook.
+  - `momo`: MoMo wallet (built and tested on MoMo's test environment, currently paused).
+- **Orders page** with each order's status, and an **order result page** after payment.
+
+### Library and downloads
+
+- **My library:** owned packs, purchase date, version, a "New version" badge with its notes, the pack's benefits, usage tips and download history.
+- **Downloads:** the server checks ownership, then gives a link that expires after 60 seconds. Sold files are never in a public folder or public bucket.
+- **Statistics page** for buyers: packs owned, downloads and money spent on their own account.
+
+### Accounts
+
+- Register, sign in, sign out, forgot password (email link), change password, profile.
+- **Continue with Google** (optional; shown only when its keys are set). An existing account with the same email is linked, and a Google account can add a password later.
+- Changing the password or being locked out signs out every other device at once.
+
+### Admin area (`/admin`)
+
+- **Overview:** revenue, orders, packs, users and downloads, plus a revenue chart (7 days, 30 days, 12 months). Real money and Demo money are always shown separately.
+- **Asset packs:** a tabbed editor (info, text in 3 languages, images, sections, download files). It includes a "Ready to publish" checklist, uploads sent straight to storage, versions with "What's new" notes, featured packs, and hide or show.
+- **Orders:** search, status filter and finance summary. Also refunds, which remove the pack and its extra downloads; **unmatched bank transfers** to resolve by hand; and manual orders.
+- **Users:** details, purchase history, lock or unlock, gift a pack.
+- **Coupons**, **Audit log** (every Admin action), **Usage** (how much of the free plans of Neon, R2 and Resend is used).
+- **Settings:**
+  - **Free plans only** mode (on by default): blocks uploads, sign-ups, orders or emails before a free plan would be exceeded. Turning it off requires typing `OPEN`.
+  - Contact channels for the chat button.
+  - Price of extra Free downloads.
+
+### Languages, design, quality
+
+- **Vietnamese (default), English, Chinese** across 100% of the interface, including toasts, errors, empty states, emails and Admin. Each pack is written per language; a pack not yet written in a language is hidden in that language.
+- **Eastern-fantasy look:** gold, ink black, cinnabar red and jade, with red seals and ornaments. Calligraphy and display fonts support every Vietnamese diacritic. Dark theme by default, with a light theme switch.
+- **Responsive dashboard layout:** a side menu on desktop, a bottom tab bar on phones.
+- **SEO:** sitemap, `hreflang` alternates, share cards, `noindex` on private pages.
+
+## What makes it special
+
+- **Sold files cannot leak.** They live in a private bucket (or in `.storage/` outside `public/` locally). Every download checks ownership on the server and uses a short-lived signed link. No Premium file URL is ever rendered into HTML or stored.
+- **Only a verified payment grants ownership.** A pack becomes owned only when a webhook with a valid signature confirms the payment. Replayed or tampered webhooks and wrong amounts are refused.
+- **The Demo gateway can never take real orders.** The app refuses to start in production with `PAYMENT_PROVIDER=demo`.
+- **Sessions are checked against the database on every request.** The JWT carries a `sessionVersion` that is compared with the user's current value, so a locked account or a changed password logs out old sessions immediately.
+- **Safety guards on the database.** `npm run db:*` refuses any host listed as production. Production migrations go through a separate command that asks you to type the database endpoint first.
+- **Built to stay free.** The "Free plans only" mode and the Usage page keep the shop within the free plans of Neon, R2 and Resend.
+- **Rate limits:** failed sign-ins, coupon guesses, sign-ups, password resets and downloads (100 per hour per account).
+- **Configuration is validated at startup.** A missing or unsafe value (Demo in production, a short secret, an `r2.dev` address in production…) stops the app with a clear message.
+- **Tested end to end:** unit tests, integration tests on a real database, and Playwright tests on desktop and phone for every main flow.
+
+## Tech stack
+
+| Area           | Technology                                                                                              |
+| -------------- | ------------------------------------------------------------------------------------------------------- |
+| App            | **Next.js 16.4** (App Router, Cache Components, Turbopack), **React 19**, TypeScript                    |
+| Styling and UI | Tailwind CSS 4, Radix UI, lucide icons; fonts: Be Vietnam Pro, Noto Serif Display, Charm, Ma Shan Zheng |
+| Database       | **PostgreSQL** with **Prisma 7** (`@prisma/adapter-pg`); Neon in the cloud, Docker locally              |
+| Auth           | **Auth.js v5** (email + password with argon2id, optional Google)                                        |
+| Languages      | **next-intl** (`vi`, `en`, `zh`)                                                                        |
+| Validation     | Zod 4                                                                                                   |
+| File storage   | Local folder in development, **Cloudflare R2** (S3 API) in production                                   |
+| Payments       | Demo, SePay (VietQR), MoMo                                                                              |
+| Email          | Files in `.mail-outbox/` in development, **Resend** in production                                       |
+| Hosting        | **Vercel** (scheduled jobs in `vercel.json`)                                                            |
+| Tests          | Vitest (unit, integration), Playwright (E2E, desktop + phone)                                           |
+
+## Quick start (local, no cloud account)
+
+### Requirements
+
+- **Node.js 20.9 or newer** and npm
+- **Docker Desktop** (for PostgreSQL), or any PostgreSQL you already have
+- Git
+
+### Steps
+
+Run every command from the **repository root**.
 
 ```bash
-# 1. Cài thư viện (cũng sinh Prisma client)
+# 1. Get the code and install (also generates the Prisma client)
+git clone <your repository URL> asset-game
+cd asset-game
 npm install
 
-# 2. Tạo file cấu hình trên máy bạn, rồi điền giá trị (xem mục 3)
+# 2. Start PostgreSQL in Docker (choose your own password)
+docker run -d --name asset2d-postgres --restart unless-stopped \
+  -e POSTGRES_USER=asset2d -e POSTGRES_PASSWORD=<choose-a-password> -e POSTGRES_DB=asset2d \
+  -p 127.0.0.1:5432:5432 -v asset2d-pgdata:/var/lib/postgresql/data postgres:17
+
+# 3. Create your local settings file
 cp .env.example .env.local
+```
 
-# 3. Tạo bảng trong database dev (dùng DIRECT_URL, kết nối không có -pooler)
+Open `.env.local` and fill in these lines. Leave everything else as it is.
+
+```dotenv
+DATABASE_URL=postgresql://asset2d:<your-password>@localhost:5432/asset2d
+DIRECT_URL=postgresql://asset2d:<your-password>@localhost:5432/asset2d
+AUTH_SECRET=<output of: npx auth secret>
+CRON_SECRET=<any random string of 32+ characters (optional locally)>
+```
+
+```bash
+# 4. Create the tables, then load the demo data
 npm run db:migrate
-
-# 4. (Tuỳ chọn) Nạp danh mục, thể loại, 10 bộ demo và mã giảm giá demo (mục 4)
 npm run db:seed
 
-# 5. Chạy web
+# 5. Start the site
 npm run dev
 ```
 
-Mở **http://localhost:3000** (tự chuyển sang `/vi`). Đăng ký một tài khoản, rồi cấp quyền Admin theo mục 5.
+Open **http://localhost:3000**. It redirects to `/vi`; switch languages from the globe icon.
 
-Ở máy bạn, mọi thư gửi đi (quên mật khẩu, v.v.) được ghi thành file trong thư mục `.mail-outbox/` để xem, không gửi thật. Xem thư mẫu: `npm run mail:preview`.
+Locally, payments use the **Demo** gateway, files are stored in `.storage/`, and emails are written to `.mail-outbox/` instead of being sent. The only warning you may see is that `DATABASE_URL` is not a pooled connection; that is expected with a local database.
 
-## 3. Cấu hình biến môi trường
+> On Windows PowerShell, write the `docker run` command on one line (remove the `\`).
 
-Toàn bộ biến nằm trong `.env.example` (có chú thích tiếng Việt và tiếng Anh). Giá trị thật **chỉ** nằm trong `.env.local` trên máy bạn. Không commit file này, không dán giá trị vào chat, không để trong file nào khác.
+### Become Admin
 
-Kiểm tra cấu hình khi khởi động: nếu thiếu hoặc sai, web từ chối chạy và báo đúng biến cần sửa.
-
-### Nhóm bắt buộc
-
-| Biến | Ý nghĩa | Ghi chú |
-|---|---|---|
-| `APP_ENV` | `development`, `test`, `preview` hoặc `production` | Trên máy: `development`. Vercel tự đặt đúng giá trị. |
-| `APP_URL` | Địa chỉ web, ví dụ `http://localhost:3000` | Dùng cho link trong thư và CORS của R2. |
-| `DATABASE_URL` | Chuỗi kết nối **pooled** (host có `-pooler`) | App chạy bằng chuỗi này. |
-| `DIRECT_URL` | Chuỗi kết nối **direct** (không có `-pooler`) | Chỉ dùng cho migrate. Giữ `sslmode=require`. |
-| `AUTH_SECRET` | Khoá ký phiên đăng nhập, tối thiểu 32 ký tự | Tạo: `npx auth secret`. |
-| `PAYMENT_PROVIDER` | `demo` (mặc định), `sepay`, `momo` | `demo` không nhận tiền thật và **bị cấm ở production**. |
-| `STORAGE_DRIVER` | `local` (mặc định trên máy) hoặc `r2` | `r2` là bắt buộc ở production. |
-| `STORAGE_LOCAL_ROOT` | Thư mục file khi dùng `local`, mặc định `.storage` | Nằm ngoài `public/`, không bao giờ commit. |
-| `MAIL_DRIVER` | `outbox` (ghi file, chỉ dùng ở máy) hoặc `resend` (gửi thật qua Resend, cần `RESEND_API_KEY`) | Production bắt buộc `resend`, và `MAIL_FROM` phải thuộc tên miền của cửa hàng (đã xác minh ở Resend). |
-| `MAIL_OUTBOX_DIR` | Thư mục thư ghi ra, mặc định `.mail-outbox` | |
-| `CRON_SECRET` | Khoá bảo vệ các việc định kỳ `/api/cron/*`, tối thiểu 32 ký tự | Trên máy chạy tay bằng `npm run cron:run`. |
-
-### Nhóm R2 (khi `STORAGE_DRIVER=r2`)
-
-Xem mục 6. Các biến: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BUCKET`, `R2_PRIVATE_BUCKET`, `R2_PUBLIC_BASE_URL`.
-
-### Nhóm thanh toán (khi dùng cổng thật)
-
-- **SePay** (chuyển khoản VietQR): `SEPAY_MODE` (`test` hoặc `live`; production bắt buộc `live`), `SEPAY_WEBHOOK_SECRET`, `SEPAY_BANK_ACCOUNT`, `SEPAY_BANK_NAME`, `SEPAY_ACCOUNT_NAME`. Trên máy cần một đường công khai để SePay gọi webhook (xem `docs/OPERATIONS.md` §4).
-- **MoMo**: `MOMO_ENDPOINT`, `MOMO_PARTNER_CODE`, `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`. Hiện đang tạm dừng (DECISIONS #42), chỉ cần khi bật lại.
-
-### Nhóm Neon riêng cho production
-
-`PRODUCTION_DATABASE_HOSTS` liệt kê host của database production. Các lệnh `db:*` và `admin:*` **từ chối** chạy trên những host này. Chuỗi kết nối production không bao giờ nằm trong `.env.local`; xem mục 11.
-
-## 4. Dữ liệu demo
-
-`npm run db:seed` làm 3 việc, và có thể chạy lại nhiều lần:
-
-- Tạo/cập nhật 21 danh mục, thể loại, phong cách, giấy phép và phần "Lợi ích".
-- **Xoá và tạo lại** 10 bộ demo (đánh dấu `isDemoData`), kèm ảnh giữ chỗ có chữ DEMO và file README demo.
-- Tạo/cập nhật mã giảm giá demo (mã bắt đầu bằng `DEMO`).
-
-Bộ thật do bạn đăng (không đánh dấu demo) **không bị đụng tới**. Chỉ cần nạp mã giảm giá demo mà không làm lại bộ: `npm run db:seed:coupons`.
-
-Mọi nội dung demo đều ghi rõ là DEMO, không phải sản phẩm thật.
-
-## 5. Cấp và thu quyền Admin
-
-Admin là tài khoản có vai trò `ADMIN`. Cách làm:
-
-1. **Tài khoản phải đăng ký trước** qua giao diện web (`/vi/register`). Lệnh không tạo tài khoản mới.
-2. Cấp quyền:
+1. Create an account on the site (`/vi/register`).
+2. Grant it the Admin role:
    ```bash
-   npm run admin:grant -- email@cua-ban.com
+   npm run admin:grant -- you@example.com
    ```
-3. Thu quyền:
-   ```bash
-   npm run admin:revoke -- email@cua-ban.com
-   ```
+3. Reload the page. **Admin** now appears in the avatar menu (`/vi/admin`).
 
-Lưu ý:
-- Vai trò được đọc lại từ database ở mỗi lần truy cập, nên cấp hoặc thu có hiệu lực ngay, không cần đăng nhập lại khi cấp.
-- **Thu quyền** tăng `sessionVersion` của tài khoản, nên mọi phiên đang đăng nhập bị đăng xuất.
-- Trên **bản thử Vercel**, dùng `npm run preview:grant -- <email>` và `npm run preview:revoke -- <email>` (đọc `.env.preview`, không đọc `.env.local`).
-- Trên **web chạy thật (production)**: tài khoản đăng ký trên web thật trước, rồi **bạn tự chạy** `npm run db:prod:grant -- <email>` (hoặc `db:prod:revoke`). Lệnh đọc chuỗi kết nối từ `.env.production-db`, chỉ ghi vào database có trong `PRODUCTION_DATABASE_HOSTS` và hỏi bạn gõ đúng mã endpoint Neon trước khi ghi (`docs/OPERATIONS.md` §2).
+To remove the role: `npm run admin:revoke -- you@example.com` (this also signs that account out everywhere).
 
-Sau khi được cấp quyền, vào **/vi/admin** để quản lý bộ asset, đơn hàng, người dùng, mã giảm giá và nhật ký.
+## Using the app
 
-## 6. Cloudflare R2 (lưu file)
+### As a buyer
 
-R2 lưu hai loại file, tách thành 2 bucket:
+1. Browse **Shop**, filter or search, then open a pack.
+2. **Free pack:** sign in, then click **Download for free**.
+3. **Premium pack:** click **Buy now** (or **Add to cart**).
+4. In the cart, try a demo coupon, then **Checkout** → **Place order**.
+5. On the Demo gateway, choose **Simulate a successful payment** or **Simulate a failed payment**.
+6. After success, open **Library** and download the pack (the demo download is a README file).
 
-- **Bucket public:** ảnh và video xem trước. Trình duyệt tải thẳng từ địa chỉ `R2_PUBLIC_BASE_URL`.
-- **Bucket private:** file bán. **Không bật truy cập công khai.** Khách chỉ tải được qua link ký sẵn sống 60 giây, sau khi server kiểm quyền sở hữu.
+Demo coupons:
 
-Các bước cài (một lần cho mỗi môi trường):
+| Code          | Effect                                |
+| ------------- | ------------------------------------- |
+| `DEMO10`      | 10 % off, no minimum                  |
+| `DEMO200K`    | 200,000 ₫ off orders from 1,000,000 ₫ |
+| `DEMOHETHAN`  | Expired (to see the error)            |
+| `DEMOHETLUOT` | Used up (to see the error)            |
 
-1. **Tạo 2 bucket** trong R2 Object Storage, ví dụ `asset-game-dev-public` và `asset-game-dev-private`.
-2. **Bucket public → Settings → Public Development URL → Enable** để có địa chỉ `https://pub-….r2.dev` (chỉ dùng để thử). Web thật phải dùng tên miền riêng gắn vào bucket (Custom Domains).
-3. **CORS cho cả 2 bucket** (Settings → CORS Policy, dạng JSON):
-   ```json
-   [
-     {
-       "AllowedOrigins": ["http://localhost:3000", "http://localhost:3100"],
-       "AllowedMethods": ["PUT"],
-       "AllowedHeaders": ["Content-Type", "Cache-Control"],
-       "MaxAgeSeconds": 3600
-     }
-   ]
-   ```
-   `3000` là dừng khi phát triển, `3100` là E2E. Bản thử và production ghi địa chỉ web thật của mình.
-4. **Tạo API token** (R2 → Manage API Tokens): quyền **Object Read & Write**, chỉ cho 2 bucket trên. Chép Access Key ID và Secret Access Key (secret chỉ hiện một lần).
-5. Điền 6 biến R2 vào `.env.local`, giữ `STORAGE_DRIVER=local`, rồi chạy:
-   ```bash
-   npm run storage:check        # 8 bước: ghi/đọc, ảnh công khai, file bán bị chặn, link tải, CORS, dọn
-   npm run storage:push         # chép file đang có trong .storage/ lên R2 (thêm --dry-run để chỉ đếm)
-   ```
-6. Khi mọi bước ✔, đổi `STORAGE_DRIVER=r2` và khởi động lại `npm run dev`.
+### As the shop owner
 
-## 7. Bản thử trên Vercel
+- **Admin → Asset packs → New pack:** fill in the info, the text in each language, images, sections and the download file, then publish once the checklist is complete.
+- **Admin → Settings:** add your contact channels (the chat button appears) and set the price of extra Free downloads.
+- **Admin → Orders:** follow payments, refund, or create an order by hand.
+- Browse the data directly: `npm run db:studio` (Prisma Studio).
 
-Bản thử chạy cổng **Demo** (không nhận tiền thật), database và bucket **riêng** (không dùng dữ liệu dev). Hướng dẫn đầy đủ từng bước (GitHub, nhánh Neon, R2, Vercel): `docs/OPERATIONS.md` §8. Tóm tắt:
+## Configuration
 
-1. Đưa code lên GitHub (repo riêng tư). `.gitignore` chặn `.env*`, `.storage/`, `.backup/`.
-2. Tạo nhánh Neon `preview` (tắt tự xoá), 2 bucket R2 `…-preview-…` và token riêng.
-3. Tạo file cấu hình của bản thử:
-   ```bash
-   npm run preview:init       # tạo .env.preview (khoá ngẫu nhiên đã sẵn), rồi điền các dòng còn trống
-   ```
-4. Trên Vercel: import repo, đặt **Production Branch = `production`** (để `main` là Preview), tắt Deployment Protection nếu muốn ai có link cũng mở được, dán nội dung `.env.preview` vào Environment Variables **chỉ cho môi trường Preview**.
-5. Dựng database và file của bản thử:
-   ```bash
-   npm run preview:setup      # migrate + seed (danh mục, 10 bộ demo, ảnh demo)
-   npm run preview:check      # kiểm R2 và CORS của địa chỉ bản thử
-   ```
-6. Đẩy một commit lên `main` để Vercel build bản Preview.
+All variables are listed and explained in [`.env.example`](.env.example). Real values go **only** in `.env.local` on your machine. That file is git-ignored; never commit it and never paste its values anywhere.
 
-Các lệnh `preview:*` từ chối chạy nếu nhầm sang production, nhầm sang database dev, hoặc nhầm bucket dev.
+| Variable                                     | Purpose                                     | Local default                          |
+| -------------------------------------------- | ------------------------------------------- | -------------------------------------- |
+| `APP_ENV`, `APP_URL`                         | Environment and site address                | `development`, `http://localhost:3000` |
+| `DATABASE_URL`                               | Connection used by the app (pooled on Neon) | your local PostgreSQL                  |
+| `DIRECT_URL`                                 | Direct connection, used only for migrations | same as above locally                  |
+| `PRODUCTION_DATABASE_HOSTS`                  | Production hosts that `db:*` must refuse    | empty                                  |
+| `AUTH_SECRET`                                | Signs sessions (32+ characters)             | required                               |
+| `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`       | Google sign-in (both or neither)            | empty = button hidden                  |
+| `PAYMENT_PROVIDER`                           | `demo`, `sepay` or `momo`                   | `demo`                                 |
+| `SEPAY_*`, `MOMO_*`                          | Gateway settings                            | empty                                  |
+| `STORAGE_DRIVER`                             | `local` or `r2`                             | `local` (`.storage/`)                  |
+| `R2_*`                                       | Cloudflare R2 buckets and token             | empty                                  |
+| `MAIL_DRIVER`, `MAIL_FROM`, `RESEND_API_KEY` | `outbox` (files) or `resend`                | `outbox` (`.mail-outbox/`)             |
+| `CRON_SECRET`                                | Protects `/api/cron/*` (32+ characters)     | optional locally                       |
 
-## 8. Các lệnh
+The app checks these values at startup and refuses to run with an unsafe combination.
 
-Chạy từ thư mục gốc. Bảng đầy đủ kèm giải thích: `CLAUDE.md` mục 1.
+## Optional services and going live
 
-| Nhóm | Lệnh | Việc làm |
-|---|---|---|
-| Chạy | `npm run dev` | Web phát triển tại localhost:3000 |
-| | `npm run build` / `npm start` | Bản build production trên máy |
-| Kiểm tra | `npm run typecheck` / `lint` / `i18n:check` | Kiểu, lint, đủ bản dịch 3 ngôn ngữ |
-| Database | `npm run db:migrate` | Tạo migration (nhánh dev) |
-| | `npm run db:seed` / `db:seed:coupons` | Nạp dữ liệu demo |
-| | `npm run db:studio` | Xem database trên trình duyệt |
-| Quyền | `npm run admin:grant -- <email>` / `admin:revoke` | Cấp / thu quyền Admin |
-| Việc định kỳ | `npm run cron:run` (hoặc `-- reconcile` / `-- cleanup`) | Chạy tay các việc định kỳ |
-| R2 | `npm run storage:check` / `storage:push` | Kiểm và chép file lên R2 |
-| Bản thử | `npm run preview:init` / `setup` / `check` / `grant` / `revoke` | Xem mục 7 |
-| Web thật | `npm run prod:init` / `prod:check` | Tạo và kiểm `.env.vercel-production` trước khi chạy thật (`docs/OPERATIONS.md` §9) |
-| Thư | `npm run mail:preview` | Ghi thư mẫu ra thư mục để xem |
-| | `npm run mail:test -- <email>` | Gửi 1 thư mẫu thật qua Resend (cần `RESEND_API_KEY`) |
+Each service is optional locally and has a step-by-step guide in [docs/OPERATIONS.md](docs/OPERATIONS.md):
 
-Các lệnh `db:prod:*` (`status`, `migrate`, `reference`, `grant`, `revoke`) chỉ dùng cho production và do người dùng tự chạy (mục 11).
+| Service           | Used for                                                                                     | Guide              |
+| ----------------- | -------------------------------------------------------------------------------------------- | ------------------ |
+| **Neon**          | Cloud PostgreSQL (pooled + direct connections, separate dev / preview / production branches) | §2                 |
+| **Cloudflare R2** | Two buckets: public previews, private files; checked by `npm run storage:check`              | §7                 |
+| **Vercel**        | Preview deployment (Demo gateway) and production                                             | §8, §9             |
+| **SePay**         | Bank transfers (VietQR) with a signed webhook                                                | `.env.example`, §4 |
+| **Resend**        | Real emails (password reset); `npm run mail:test -- <email>` sends a sample                  | §9                 |
+| **Google Cloud**  | "Continue with Google"                                                                       | §10                |
 
-## 9. Kiểm thử
+Going live, in short:
+
+1. Create the production database branch and the buckets. Then run `npm run prod:init`, fill in `.env.vercel-production` and check it with `npm run prod:check`. It lists every missing or unsafe value.
+2. Apply migrations to production **yourself** with `npm run db:prod:migrate`, after a confirmation prompt. Never use `db:migrate` or `db:seed` on production.
+3. Production needs a real gateway (`sepay` in `live` mode), R2 with a custom domain for images, Resend with a verified domain, and a `CRON_SECRET`.
+
+## Commands
+
+Run from the repository root.
+
+| Group      | Command                                                                 | What it does                                                      |
+| ---------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Run        | `npm run dev`                                                           | Development server at http://localhost:3000                       |
+|            | `npm run build` / `npm start`                                           | Production build / run it                                         |
+| Checks     | `npm run lint` · `npm run typecheck` · `npm run i18n:check`             | ESLint · TypeScript · same keys in all 3 languages                |
+|            | `npm run format`                                                        | Prettier                                                          |
+| Database   | `npm run db:migrate`                                                    | Apply / create migrations (dev only)                              |
+|            | `npm run db:seed` / `db:seed:coupons`                                   | Demo data / demo coupons only                                     |
+|            | `npm run db:generate` · `npm run db:studio`                             | Prisma client · Prisma Studio                                     |
+| Admin      | `npm run admin:grant -- <email>` / `admin:revoke`                       | Give / remove the Admin role                                      |
+| Jobs       | `npm run cron:run` (`-- reconcile` / `-- cleanup`)                      | Expire unpaid orders, clean old carts, files and counters         |
+| Email      | `npm run mail:preview` · `npm run mail:test -- <email>`                 | Write sample emails to files · send one via Resend                |
+| Storage    | `npm run storage:check` · `npm run storage:push`                        | Test R2 end to end · copy `.storage/` to R2                       |
+| Preview    | `npm run preview:init` / `setup` / `check` / `grant` / `revoke`         | Vercel preview environment                                        |
+| Production | `npm run prod:init` / `prod:check`                                      | Prepare and check production settings                             |
+|            | `npm run db:prod:status` / `migrate` / `reference` / `grant` / `revoke` | Production database, **run by the owner only**, with confirmation |
+| Icons      | `npm run icons`                                                         | Regenerate the favicons from the logo                             |
+
+## Testing
 
 ```bash
-npm test                 # unit (backend + frontend)
-npm run test:integration # tích hợp, trên database dev
-npm run build && npm run test:e2e   # E2E, cần build trước
+npm test                          # unit tests (backend + frontend)
+npm run test:integration          # integration tests on the development database
+npm run build && npm run test:e2e # Playwright, desktop + phone (needs a build first)
 ```
 
-- Chạy `npm test` và `npm run test:integration` từ **PowerShell** trên Windows (từ Git Bash, Vitest báo lỗi "failed to find the runner").
-- E2E chạy trên cổng 3100 và tự khởi động server; tắt server đang chiếm cổng 3000 trước khi chạy.
-- E2E và tích hợp tạo dữ liệu thử có tiền tố riêng và tự xoá, nhưng vẫn ghi vào database dev: không chạy trên production.
+- On Windows, run Vitest from **PowerShell** (from Git Bash it fails with "failed to find the runner").
+- E2E runs on port 3100 and starts its own server. Stop anything else using that port first.
+- Integration and E2E tests create tagged test data in the development database and remove it afterwards. Never point them at production.
 
-## 10. Lỗi thường gặp
+## Project structure
 
-| Triệu chứng | Nguyên nhân và cách sửa |
-|---|---|
-| Web không chạy, báo "Cấu hình môi trường không an toàn" | Đọc danh sách biến bị báo, sửa trong `.env.local`. Đây là chốt chặn có chủ đích. |
-| `db:migrate` báo DIRECT_URL trỏ tới pooler | Dùng chuỗi **không có** `-pooler` cho `DIRECT_URL`. |
-| Vercel build lỗi "production" và thiếu biến | Nhánh `main` đang là Production Branch. Đổi sang `production` trong Settings → Branch Tracking (xem mục 7). |
-| Ảnh không hiện | Kiểm `R2_PUBLIC_BASE_URL` và CORS của bucket public (`npm run storage:check`). |
-| Tải file lên ở Admin báo "Tải lên thất bại" | CORS của bucket thiếu địa chỉ web đang dùng (cổng 3000, 3100, hoặc địa chỉ Vercel). |
-| Cổng 3000 bận khi `npm run dev` | Có server khác đang chạy: tắt nó hoặc đổi cổng. |
-| Sau khi cấp Admin, vẫn không thấy mục Quản trị | Tải lại trang. Nếu vẫn không thấy, kiểm tra email có đúng tài khoản đã đăng ký không. |
-| Prisma báo thiếu client | Chạy `npm run db:generate` (hoặc `npm install`). |
+One Next.js app split into three folders. Every `npm run …` command runs from the root.
 
-## 11. Quy tắc bắt buộc
+```text
+frontend/   Next.js app: pages and API routes (src/app), components, styles, fonts,
+            translations (messages/vi.json, en.json, zh.json), E2E tests
+backend/    Server code: modules (repository → service → actions), auth, payments,
+            storage, mail, env validation; Prisma schema, migrations, seed; scripts; tests
+docs/       Product, architecture, design, roadmap, decisions, operations
+```
 
-- **Không commit** `.env*` (trừ `.env.example`), `.storage/`, `.mail-outbox/`, `.backup/`. `.gitignore` đã chặn, đừng bỏ chặn.
-- **Không dán** khoá, mật khẩu, chuỗi kết nối hay secret vào chat, issue hay commit. Nếu lỡ dán, đổi ngay.
-- **Không chạy migrate hoặc seed trên production.** Chỉ dùng `db:*` (có chốt chặn). Migration production do người dùng tự chạy qua `npm run db:prod:status | db:prod:migrate | db:prod:reference` (cấp quyền Admin: `db:prod:grant | db:prod:revoke`), cần nhập xác nhận (`docs/OPERATIONS.md` §2).
-- **File bán** không bao giờ nằm trong thư mục công khai hay bucket public. Không lưu link tải vào database hay cache.
-- **Không đổi quyết định đã xác nhận** trong `docs/DECISIONS.md` khi chưa hỏi người dùng.
+- Pages call **services** only. Services hold the business rules, repositories hold the Prisma queries, and actions or routes check auth and input.
+- Interface text comes only from `frontend/messages/*.json`, never hard-coded.
+
+## Troubleshooting
+
+| Problem                                                        | Fix                                                                                                                                        |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| The app stops with "unsafe environment configuration"          | Read the listed variables and fix them in `.env.local`. This check is on purpose.                                                          |
+| `db:seed` fails with "Invalid URL"                             | A URL variable is present but empty (for example `MOMO_ENDPOINT=`). Restore the value from `.env.example`.                                 |
+| Console shows `JWTSessionError: no matching decryption secret` | The browser keeps a session cookie signed with an old `AUTH_SECRET`. Delete the `authjs.*` cookies for localhost, or use a private window. |
+| Cannot connect to the database                                 | Docker Desktop must be running; check `docker ps` shows `asset2d-postgres`.                                                                |
+| No "Continue with Google" button                               | Expected until `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` are both set (redirect URI `http://localhost:3000/api/auth/callback/google`).     |
+| No chat button                                                 | Add at least one contact channel in Admin → Settings.                                                                                      |
+| "Admin" missing after `admin:grant`                            | Reload the page and check the email matches the registered account.                                                                        |
+| Prisma client missing                                          | `npm run db:generate` (or `npm install`).                                                                                                  |
+| Port 3000 busy                                                 | Another server is running: stop it or change the port.                                                                                     |
+
+## Documentation and license
+
+- [docs/README.md](docs/README.md): documentation index.
+- [docs/PRODUCT.md](docs/PRODUCT.md): business rules, categories, demo data. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): system design. [docs/DESIGN.md](docs/DESIGN.md): visual design.
+- [docs/OPERATIONS.md](docs/OPERATIONS.md): environments and services. [docs/DECISIONS.md](docs/DECISIONS.md): confirmed decisions.
+- [CLAUDE.md](CLAUDE.md): working rules for Claude Code on this repository.
+
+Some docs are written in Vietnamese.
+
+No open-source license has been chosen for this repository yet, so all rights are reserved by its owner. The bundled fonts (Ma Shan Zheng, Noto Serif Display) are under the SIL Open Font License 1.1; see [frontend/src/fonts/README.md](frontend/src/fonts/README.md).

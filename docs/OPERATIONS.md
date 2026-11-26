@@ -9,6 +9,7 @@ Môi trường, cơ sở dữ liệu, chạy và chia sẻ web, sao lưu. Không
 - Biến cho cổng MoMo (bước 6.4): `MOMO_ENDPOINT`, `MOMO_PARTNER_CODE`, `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`, chỉ cần khi `PAYMENT_PROVIDER=momo` (xem `.env.example`).
 - Biến cho cổng SePay (DECISIONS #45): `SEPAY_MODE` (`test` | `live`; production bắt buộc `live`), `SEPAY_WEBHOOK_SECRET` (khoá HMAC của webhook SePay), `SEPAY_BANK_ACCOUNT`, `SEPAY_BANK_NAME`, `SEPAY_ACCOUNT_NAME`; chỉ cần khi `PAYMENT_PROVIDER=sepay` (xem `.env.example`). Khoá chỉ nằm trong `.env.local`.
 - Biến cho Cloudflare R2 (bước 7.5, DECISIONS #53): `R2_ACCOUNT_ID` (32 ký tự hex), `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BUCKET`, `R2_PRIVATE_BUCKET` (2 bucket khác nhau), `R2_PUBLIC_BASE_URL` (địa chỉ `https://` của bucket ảnh: tên miền riêng; r2.dev chỉ ở dev); bắt buộc khi `STORAGE_DRIVER=r2`. Cách cài: §7.
+- Biến cho đăng nhập Google (DECISIONS #63): `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` (điền cả hai hoặc bỏ trống cả hai; trống thì nút "Tiếp tục với Google" không hiện). Cách cài: §10.
 
 ## 2. Neon (PostgreSQL)
 
@@ -158,3 +159,20 @@ Lựa chọn: DECISIONS #55 (chuẩn bị trước phần không cần tài kho�
 **Chống tốn tiền khi bản thử mở link công khai:** Google không thấy bản thử (`robots.txt`); đã có giới hạn số lần thử theo IP (bước 7.1). Nếu bị spam: reset nhánh Neon `preview` rồi `npm run preview:setup`; hoặc bật lại Vercel Authentication (khi đó người xem phải có quyền với dự án). Theo dõi phần đã dùng của gói miễn phí: **Quản trị → Dung lượng** (#58; đo môi trường đang mở: nhánh Neon và 2 bucket của nó; Neon và R2 tính gói miễn phí chung cho mọi nhánh / bucket, nên xem thêm trang quản lý của Neon và Cloudflare).
 
 **Chỉ dùng gói miễn phí** (#59): mặc định bật ở mọi môi trường (web thật nhận cột `freeTierOnly` khi chạy `db:prod:migrate` ở bước 3). Khi bật, web chặn: Admin tải file lên khi 2 bucket của môi trường cộng file mới vượt 9 GB (90 % gói R2; R2 tính 10 GB chung cả tài khoản nên chừa chỗ cho bucket dev và bản thử); khách đăng ký, đặt đơn, mua thêm lượt tải khi database đạt 1 GB; gửi email quá 100 thư / ngày hoặc 3.000 thư / tháng. Muốn trả tiền phần vượt: **Quản trị → Cài đặt**, gõ `OPEN` rồi bấm tắt (có ghi Nhật ký); bật lại chỉ một nút. Trang **Dung lượng** cho biết chế độ đang bật hay tắt. R2 là dịch vụ duy nhất tính tiền phần vượt (tài khoản Cloudflare có thẻ); có thể đặt thêm Budget Alert (ví dụ $1) ở Cloudflare → Billing để nhận email khi phát sinh tiền (gợi ý của Claude, PENDING).
+
+## 10. Đăng nhập bằng Google (DECISIONS #63)
+
+Nút "Tiếp tục với Google" chỉ hiện khi môi trường có đủ `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET`. Mỗi môi trường (dev, bản thử, web thật) điền khoá riêng của nó; không gửi khoá qua chat.
+
+1. **Google Cloud Console** (console.cloud.google.com): chọn hoặc tạo một project → **Google Auth Platform** (APIs & Services → OAuth consent screen): loại **External**, tên ứng dụng, email hỗ trợ. Khi ứng dụng còn ở chế độ **Testing**, chỉ các Gmail trong **Audience → Test users** đăng nhập được.
+2. **Clients → Create client → Web application.** **Authorized redirect URIs** (đúng từng ký tự, không có `/` ở cuối):
+   - dev: `http://localhost:3000/api/auth/callback/google`;
+   - bản thử: `<APP_URL của bản thử>/api/auth/callback/google` (mở bản thử bằng địa chỉ cố định của §8; địa chỉ riêng của từng lần build không nằm trong danh sách nên Google sẽ báo `redirect_uri_mismatch`);
+   - web thật: `https://<tên miền của web>/api/auth/callback/google`.
+   Có thể dùng một client cho cả ba (thêm đủ các địa chỉ) hoặc tạo client riêng cho web thật.
+3. Chép **Client ID** → `AUTH_GOOGLE_ID`, **Client secret** → `AUTH_GOOGLE_SECRET`:
+   - dev: `.env.local`, rồi khởi động lại dev server;
+   - bản thử: `.env.preview` rồi Vercel → Environment Variables, **chỉ môi trường Preview** (như §8 bước 5), rồi đẩy một commit lên `main`;
+   - web thật: `.env.vercel-production` rồi Vercel, **chỉ môi trường Production** (§9 bước 4).
+4. Kiểm tra: `/vi/login` có nút "Tiếp tục với Google"; `/api/auth/providers` có `google` với `callbackUrl` đúng địa chỉ đã khai ở bước 2. Google báo `redirect_uri_mismatch`: địa chỉ ở bước 2 không khớp địa chỉ đang mở.
+5. Trước khi mở cho khách trên web thật: **Audience → Publish app** (chuyển sang "In production"). Web chỉ xin `openid`, `email`, `profile`; nếu Google yêu cầu xác minh thương hiệu (tên, logo, tên miền) thì làm theo hướng dẫn trên màn hình.

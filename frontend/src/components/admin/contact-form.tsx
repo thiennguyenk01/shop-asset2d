@@ -6,6 +6,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { FormError } from "@/components/account/auth-forms";
 import { ContactIcon } from "@/components/layout/contact-icons";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/toast";
 import {
   CONTACT_INPUT_MAX,
@@ -124,19 +125,16 @@ export function ContactForm({ initial, names }: { initial: ContactSetting[]; nam
                 )}
               </div>
               <div className="flex items-center gap-1 sm:pt-7">
-                <label className="mr-2 inline-flex cursor-pointer items-center gap-2 text-sm text-ivory-300">
-                  <input
-                    type="checkbox"
-                    name={`enabled.${kind}`}
-                    checked={rows.enabled[kind]}
-                    onChange={(e) => {
-                      const on = e.target.checked;
-                      setRows((r) => ({ ...r, enabled: { ...r.enabled, [kind]: on } }));
-                    }}
-                    className="size-4 cursor-pointer accent-gold-500"
-                  />
-                  {t("contactShow")}
-                </label>
+                <Switch
+                  className="mr-2"
+                  label={t("contactShow")}
+                  name={`enabled.${kind}`}
+                  checked={rows.enabled[kind]}
+                  onChange={(e) => {
+                    const on = e.target.checked;
+                    setRows((r) => ({ ...r, enabled: { ...r.enabled, [kind]: on } }));
+                  }}
+                />
                 <Button
                   type="button"
                   variant="ghost"

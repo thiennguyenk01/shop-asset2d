@@ -58,7 +58,7 @@ describe("normalizeContactValue", () => {
   });
 
   it("email: one address, lower-cased", () => {
-    expect(normalizeContactValue("email", " HoTro@Asset2D.id.vn ")).toEqual(ok("hotro@asset2d.id.vn"));
+    expect(normalizeContactValue("email", " HoTro@Example.com ")).toEqual(ok("hotro@example.com"));
     expect(normalizeContactValue("email", "mailto:a@b.co")).toEqual(ok("a@b.co"));
     expect(normalizeContactValue("email", "a@b")).toEqual(bad);
     expect(normalizeContactValue("email", "a@b.co, c@d.co")).toEqual(bad);

@@ -59,6 +59,6 @@ describe("mail:test sender", () => {
   it("uses Resend's test sender while MAIL_FROM is still the dev placeholder", () => {
     expect(testSender(undefined)).toBe(RESEND_TEST_FROM);
     expect(testSender("Asset Game MMORPG 2D <no-reply@localhost>")).toBe(RESEND_TEST_FROM);
-    expect(testSender("Shop <no-reply@asset2d.id.vn>")).toBe("Shop <no-reply@asset2d.id.vn>");
+    expect(testSender("Shop <no-reply@example.com>")).toBe("Shop <no-reply@example.com>");
   });
 });

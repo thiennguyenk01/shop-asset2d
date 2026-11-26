@@ -75,14 +75,13 @@ describe("production env", () => {
       "STORAGE_DRIVER phải là r2 trên production.",
     ]);
   });
-  it("template: random secrets, live payments and R2, the shop domain filled in, the rest to fill in", () => {
+  it("template: random secrets, live payments and R2, no domain, the rest to fill in", () => {
     const t = parse(productionTemplate(local));
     expect(t.AUTH_SECRET).toMatch(/^[\w-]{43}$/);
     expect(t.CRON_SECRET).not.toBe(t.AUTH_SECRET);
     expect(t).toMatchObject({ PAYMENT_PROVIDER: "sepay", SEPAY_MODE: "live", STORAGE_DRIVER: "r2", MAIL_DRIVER: "resend", RESEND_API_KEY: "", DATABASE_URL: "" });
-    // The shop domain is known (DECISIONS #55): web, images and sender are filled in; Google sign-in stays off until its keys are.
-    expect(t).toMatchObject({ APP_URL: "https://asset2d.id.vn", R2_PUBLIC_BASE_URL: "https://media.asset2d.id.vn", AUTH_GOOGLE_ID: "", AUTH_GOOGLE_SECRET: "" });
-    expect(t.MAIL_FROM).toMatch(/@asset2d\.id\.vn>$/);
+    // No domain is filled in (a template for any shop): web, images and sender stay empty; Google sign-in stays off until its keys are.
+    expect(t).toMatchObject({ APP_URL: "", R2_PUBLIC_BASE_URL: "", MAIL_FROM: "", AUTH_GOOGLE_ID: "", AUTH_GOOGLE_SECRET: "" });
     expect(t.PRODUCTION_DATABASE_HOSTS).toBe(local.PRODUCTION_DATABASE_HOSTS);
   });
 });

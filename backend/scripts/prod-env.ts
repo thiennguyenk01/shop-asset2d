@@ -120,7 +120,8 @@ export function productionTemplate(local: Record<string, string>): string {
   return [
     "# Web chạy thật (production, bước 7.7). Điền các dòng còn trống (không gửi file này qua chat, không commit),",
     "# kiểm bằng `npm run prod:check`, rồi dán nội dung vào Vercel → Settings → Environment Variables, CHỈ chọn Production.",
-    "APP_URL=",
+    "# Địa chỉ web thật (tên miền asset2d.id.vn, DECISIONS #55)",
+    "APP_URL=https://asset2d.id.vn",
     "# Nhánh production của Neon, kết nối pooled (host có -pooler)",
     "DATABASE_URL=",
     `PRODUCTION_DATABASE_HOSTS=${local.PRODUCTION_DATABASE_HOSTS ?? ""}`,
@@ -141,11 +142,14 @@ export function productionTemplate(local: Record<string, string>): string {
     "R2_SECRET_ACCESS_KEY=",
     "R2_PUBLIC_BUCKET=asset-game-prod-public",
     "R2_PRIVATE_BUCKET=asset-game-prod-private",
-    "R2_PUBLIC_BASE_URL=",
+    "R2_PUBLIC_BASE_URL=https://media.asset2d.id.vn",
     "# Email thật qua Resend: khoá API (re_…) và người gửi thuộc tên miền đã xác minh ở Resend",
     "MAIL_DRIVER=resend",
     "MAIL_FROM=Asset Game MMORPG 2D <no-reply@asset2d.id.vn>",
     "RESEND_API_KEY=",
+    "# Đăng nhập Google (tuỳ chọn, DECISIONS #63): client của web thật, redirect URI <APP_URL>/api/auth/callback/google; trống cả hai = không có nút Google",
+    "AUTH_GOOGLE_ID=",
+    "AUTH_GOOGLE_SECRET=",
     "",
   ].join("\n");
 }

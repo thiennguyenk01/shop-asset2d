@@ -137,7 +137,7 @@ Lựa chọn: DECISIONS #55 (chuẩn bị trước phần không cần tài kho�
 
 | # | Việc | Ghi chú |
 |---|---|---|
-| 1 | Tên miền `asset2d.id.vn` | Đưa vào Cloudflare (DNS). Dùng cho 2 việc: web (gắn vào dự án Vercel) và ảnh (`media.asset2d.id.vn` gắn vào bucket ảnh R2: Cloudflare → R2 → bucket → Settings → Custom Domains). *(2026-11-26: đã mua, đã thêm vào Cloudflare, chờ đổi nameserver; xem §7.)* |
+| 1 | Tên miền `asset2d.id.vn` | Đưa vào Cloudflare (DNS). Dùng cho 2 việc: web (gắn vào dự án Vercel) và ảnh (`media.asset2d.id.vn` gắn vào bucket ảnh R2: Cloudflare → R2 → bucket → Settings → Custom Domains). *(2026-11-26: đã mua, đã thêm vào Cloudflare, chờ đổi nameserver; xem §7.)* *(2026-11-26, #66: người dùng báo Mắt Bão không hỗ trợ DNSSEC nữa, sẽ chuyển tên miền sang nơi khác. `.env.vercel-production` và mẫu `prod:init` đã điền sẵn `APP_URL`, `R2_PUBLIC_BASE_URL`, `MAIL_DRIVER`, `MAIL_FROM` theo tên miền. Gắn `media.asset2d.id.vn` vào R2 cần DNS của tên miền do Cloudflare quản lý; nơi mới không cho đổi nameserver sang Cloudflare thì phải quyết định lại cách phục vụ ảnh.)* |
 | 2 | Nhánh Neon `production` | Có sẵn. Chuỗi **pooled** (có `-pooler`) → `DATABASE_URL` của Vercel; chuỗi **direct** chỉ nằm trong `.env.production-db` lúc chạy `db:prod:*`. |
 | 3 | R2 của web thật | 2 bucket `asset-game-prod-public` / `asset-game-prod-private`, token riêng chỉ cho 2 bucket đó, CORS `AllowedOrigins` = địa chỉ web thật ở cả 2 bucket (như §7). |
 | 4 | SePay thật | Tài khoản SePay nối với tài khoản ngân hàng nhận tiền; `SEPAY_MODE=live`, `SEPAY_WEBHOOK_SECRET`, `SEPAY_BANK_ACCOUNT`, `SEPAY_BANK_NAME`, `SEPAY_ACCOUNT_NAME`; webhook trỏ tới `https://<web thật>/api/payments/sepay/webhook`, ký HMAC (#45). |

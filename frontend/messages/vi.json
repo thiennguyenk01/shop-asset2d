@@ -1733,7 +1733,7 @@
       "sections": {
         "collect": {
           "title": "Dữ liệu được lưu",
-          "body": "- Tài khoản: email, tên hiển thị (nếu có) và mật khẩu. Mật khẩu chỉ được lưu dạng băm, không ai đọc được mật khẩu gốc.\n- Đơn hàng: bộ đã mua, số tiền, mã đơn, thời gian và trạng thái thanh toán.\n- Lịch sử tải: bộ nào được tải và lúc nào.\n- Giỏ hàng của khách chưa đăng nhập: xoá sau 30 ngày không thay đổi.\n- Chống lạm dụng: số lần đăng nhập sai hoặc thử mã giảm giá theo địa chỉ IP, chỉ lưu dạng băm và xoá sau 24 giờ."
+          "body": "- Tài khoản: email, tên hiển thị (nếu có) và mật khẩu (nếu bạn đặt). Mật khẩu chỉ được lưu dạng băm, không ai đọc được mật khẩu gốc.\n- Đăng nhập bằng Google (nếu bạn dùng): mã tài khoản Google, cùng email và tên mà Google gửi về. Cửa hàng không nhận mật khẩu Google và không lưu ảnh đại diện.\n- Đơn hàng: bộ đã mua, số tiền, mã đơn, thời gian và trạng thái thanh toán.\n- Lịch sử tải: bộ nào được tải và lúc nào.\n- Giỏ hàng của khách chưa đăng nhập: xoá sau 30 ngày không thay đổi.\n- Chống lạm dụng: số lần đăng nhập sai hoặc thử mã giảm giá theo địa chỉ IP, chỉ lưu dạng băm và xoá sau 24 giờ."
         },
         "notCollected": {
           "title": "Dữ liệu không lưu",
@@ -1749,7 +1749,7 @@
         },
         "where": {
           "title": "Dữ liệu nằm ở đâu",
-          "body": "- Máy chủ web: Vercel.\n- Cơ sở dữ liệu: Neon (PostgreSQL).\n- File và ảnh: Cloudflare R2.\n- Email: Resend.\n- Thông báo chuyển khoản: SePay."
+          "body": "- Máy chủ web: Vercel.\n- Cơ sở dữ liệu: Neon (PostgreSQL).\n- File và ảnh: Cloudflare R2.\n- Email: Resend.\n- Thông báo chuyển khoản: SePay.\n- Đăng nhập bằng Google (nếu bạn dùng): Google."
         },
         "rights": {
           "title": "Quyền của bạn",
@@ -1763,7 +1763,7 @@
       "sections": {
         "yes": {
           "title": "Khi nào được hoàn tiền",
-          "body": "- Đã thanh toán nhưng không tải được bộ do lỗi của cửa hàng, và cửa hàng không khắc phục được.\n- File của bộ bị hỏng hoặc khác hẳn mô tả trên trang bộ.\n- Thanh toán hai lần cho cùng một bộ."
+          "body": "- Đã thanh toán nhưng không tải được bộ do lỗi của cửa hàng, và cửa hàng không khắc phục được.\n- File của bộ bị hỏng hoặc khác hẳn mô tả trên trang bộ.\n- Thanh toán hai lần cho cùng một bộ.\n- Mua nhầm và chưa tải bộ lần nào."
         },
         "no": {
           "title": "Khi nào không hoàn tiền",

@@ -1733,7 +1733,7 @@
       "sections": {
         "collect": {
           "title": "Data we keep",
-          "body": "- Account: email, display name (if any) and password. The password is only stored as a hash; nobody can read the original.\n- Orders: the packs bought, amount, order code, time and payment status.\n- Download history: which pack was downloaded and when.\n- Carts of signed-out visitors: deleted after 30 days without changes.\n- Abuse protection: failed sign-ins and coupon attempts per IP address, stored only as a hash and deleted after 24 hours."
+          "body": "- Account: email, display name (if any) and password (if you set one). The password is only stored as a hash; nobody can read the original.\n- Signing in with Google (if you use it): your Google account ID, and the email and name Google sends. The shop never receives your Google password and does not store your profile picture.\n- Orders: the packs bought, amount, order code, time and payment status.\n- Download history: which pack was downloaded and when.\n- Carts of signed-out visitors: deleted after 30 days without changes.\n- Abuse protection: failed sign-ins and coupon attempts per IP address, stored only as a hash and deleted after 24 hours."
         },
         "notCollected": {
           "title": "Data we do not keep",
@@ -1749,7 +1749,7 @@
         },
         "where": {
           "title": "Where the data is stored",
-          "body": "- Web hosting: Vercel.\n- Database: Neon (PostgreSQL).\n- Files and images: Cloudflare R2.\n- Email: Resend.\n- Bank transfer notices: SePay."
+          "body": "- Web hosting: Vercel.\n- Database: Neon (PostgreSQL).\n- Files and images: Cloudflare R2.\n- Email: Resend.\n- Bank transfer notices: SePay.\n- Sign-in with Google (if you use it): Google."
         },
         "rights": {
           "title": "Your rights",
@@ -1763,7 +1763,7 @@
       "sections": {
         "yes": {
           "title": "When you can get a refund",
-          "body": "- You paid but could not download the pack because of a fault on the shop's side, and the shop could not fix it.\n- The pack's files are broken or clearly different from the description on the pack page.\n- You paid twice for the same pack."
+          "body": "- You paid but could not download the pack because of a fault on the shop's side, and the shop could not fix it.\n- The pack's files are broken or clearly different from the description on the pack page.\n- You paid twice for the same pack.\n- You bought the pack by mistake and have never downloaded it."
         },
         "no": {
           "title": "When there is no refund",

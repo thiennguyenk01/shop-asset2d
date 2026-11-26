@@ -12,7 +12,7 @@ paths:
 
 > **Cấu trúc thư mục (2026-11-21, DECISIONS #48):** thân file này còn ghi đường dẫn cũ (`src/server/…`, `tests/…`); đối chiếu sang `frontend/` · `backend/` bằng bảng trong `CLAUDE.md` §3 "Cấu trúc thư mục". Danh sách `paths:` ở trên đã đổi.
 
-Chuyển từ `CLAUDE.md` cũ (2026-11-15): các ô dài của bảng lệnh và mục "Lưu ý kỹ thuật" về test; nguyên văn, trừ dòng `visible()` được gộp khi nghiệm thu (bản cũ: `.backup/docs-2026-11-15/CLAUDE.md.bak`).
+Chuyển từ `CLAUDE.md` cũ (2026-11-15): các ô dài của bảng lệnh và mục "Lưu ý kỹ thuật" về test; nguyên văn, trừ dòng `visible()` được gộp khi nghiệm thu (bản cũ: `.backup/docs-2026-11-15/CLAUDE.md.bak`). *(Thư mục `.backup/` đã xoá 2026-11-26 theo lựa chọn của người dùng, DECISIONS #67.)*
 
 ## Chạy test (nguyên văn ô bảng lệnh cũ)
 - `npm test`: Vitest unit (`tests/unit`). 1 file: `npx vitest run tests/unit/env.test.ts`; 1 test: `npx vitest run -t "tên test"`. **Chạy từ PowerShell** (hoặc thư mục `C:/...`): từ Git Bash với đường dẫn `/c/...` Vitest nạp trùng module và báo "failed to find the runner" cho mọi file.

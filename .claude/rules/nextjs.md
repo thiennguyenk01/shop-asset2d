@@ -18,7 +18,7 @@ paths:
 
 > **Cấu trúc thư mục (2026-11-21, DECISIONS #48):** thân file này còn ghi đường dẫn cũ (`src/server/…`, `tests/…`); đối chiếu sang `frontend/` · `backend/` bằng bảng trong `CLAUDE.md` §3 "Cấu trúc thư mục". Danh sách `paths:` ở trên đã đổi.
 
-Chuyển từ "Lưu ý kỹ thuật" của `CLAUDE.md` cũ (2026-11-15): nguyên văn, trừ phần flash và `visible()` được gộp khi nghiệm thu (bản cũ: `.backup/docs-2026-11-15/CLAUDE.md.bak`). Quy tắc chung và bảo mật: `CLAUDE.md`.
+Chuyển từ "Lưu ý kỹ thuật" của `CLAUDE.md` cũ (2026-11-15): nguyên văn, trừ phần flash và `visible()` được gộp khi nghiệm thu (bản cũ: `.backup/docs-2026-11-15/CLAUDE.md.bak`). Quy tắc chung và bảo mật: `CLAUDE.md`. *(Thư mục `.backup/` đã xoá 2026-11-26 theo lựa chọn của người dùng, DECISIONS #67.)*
 
 ## Next 16, layout, i18n
 - Next 16.4 khác nhiều so với dữ liệu huấn luyện: **đọc `node_modules/next/dist/docs/` trước khi viết code Next** (xem `AGENTS.md`). Middleware giờ là `src/proxy.ts` (Node runtime). `cacheComponents` bật → dữ liệu động mặc định; dữ liệu request-time (cookies, `useSearchParams`, `auth()`) phải nằm trong `<Suspense>`; không dùng `dynamicParams`/`runtime`/`dynamic` segment config.

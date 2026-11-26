@@ -14,4 +14,6 @@ cp .env.example .env.local  # điền giá trị trên máy bạn (không commit
 npm run dev                 # http://localhost:3000 → /vi
 ```
 
+Hướng dẫn đầy đủ cho người mới (ảnh demo, chức năng, cài đặt bằng PostgreSQL trong Docker): **[README.vi.md](../README.vi.md)** (tiếng Việt) · **[README.md](../README.md)** (English).
+
 Các lệnh khác: xem bảng lệnh trong CLAUDE.md.

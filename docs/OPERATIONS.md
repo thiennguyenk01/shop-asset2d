@@ -13,18 +13,18 @@ Môi trường, cơ sở dữ liệu, chạy và chia sẻ web, sao lưu. Không
 
 ## 2. Neon (PostgreSQL)
 
-- Project `asset-game-mmorpg-2d` (AWS Singapore, Free plan, PostgreSQL 18). Nhánh `production` (mặc định) và nhánh `dev` (dùng khi phát triển, host `ep-wild-brook-ao7rgaie…`). Chi tiết lúc kết nối: `docs/PROGRESS.md`, GĐ0.
+- Project `asset-game-mmorpg-2d` (AWS Singapore, Free plan, PostgreSQL 18). Nhánh `production` (mặc định) và nhánh `dev` (dùng khi phát triển, host `ep-<mã nhánh dev>…`). Chi tiết lúc kết nối: `docs/PROGRESS.md`, GĐ0.
 - `DATABASE_URL` = **pooled** (host `-pooler`, `sslmode=verify-full`) dùng lúc chạy; `DIRECT_URL` = **direct** (`sslmode=require`) chỉ cho Prisma CLI / migrate (DECISIONS #10).
-- `PRODUCTION_DATABASE_HOSTS` = host nhánh `production` (`ep-long-sun-aowyt90y…`): guard của `db:*`, `admin:grant/revoke` và test tích hợp từ chối chạy trên các host này (cả direct lẫn pooled). Chuỗi kết nối production không bao giờ nằm trong `.env.local`; chỉ nằm trong `.env.production-db` lúc chạy `db:prod:*` (mục dưới; sửa ở bước 7.4, DECISIONS #44).
+- `PRODUCTION_DATABASE_HOSTS` = host nhánh `production` (`ep-<mã nhánh production>…`): guard của `db:*`, `admin:grant/revoke` và test tích hợp từ chối chạy trên các host này (cả direct lẫn pooled). Chuỗi kết nối production không bao giờ nằm trong `.env.local`; chỉ nằm trong `.env.production-db` lúc chạy `db:prod:*` (mục dưới; sửa ở bước 7.4, DECISIONS #44).
 
 ### Đưa thay đổi database lên production (bước 7.4, DECISIONS #44)
 
 Chỉ người dùng chạy, trên máy của mình. Claude không chạy các lệnh này lên production.
 
 1. **Chuẩn bị:** Neon Console → nhánh `production` → Connect → chọn kết nối **không** pooled (host không có `-pooler`) → chép chuỗi kết nối. Tạo file `.env.production-db` ở thư mục dự án, một dòng: `DIRECT_URL=<chuỗi vừa chép>` (phải có `sslmode=require`). Không dán chuỗi này vào chat, không để trong `.env.local`.
-2. **Xem trạng thái (chỉ đọc):** `npm run db:prod:status`: số migration đã áp / chờ áp, các cảnh báo, rồi `prisma migrate status` (dòng `Datasource` phải là host `ep-long-sun-…`).
+2. **Xem trạng thái (chỉ đọc):** `npm run db:prod:status`: số migration đã áp / chờ áp, các cảnh báo, rồi `prisma migrate status` (dòng `Datasource` phải là host `ep-<mã nhánh production>…`).
 3. **Sao lưu:** Neon Console → Branches → Create branch, lấy từ `production` (đặt tên kiểu `backup-<ngày>`). Có sự cố thì khôi phục từ nhánh này.
-4. **Áp migration:** `npm run db:prod:migrate` → đọc danh sách, gõ đúng mã endpoint (`ep-long-sun-…`) khi được hỏi. Migration có lệnh có thể mất dữ liệu (DROP / TRUNCATE / DELETE / đổi kiểu cột) bị chặn trên database đang dùng: đọc kỹ file SQL, nếu chắc chắn thì `npm run db:prod:migrate -- --allow-destructive`. Database còn trống (lần đầu) thì không cần cờ này.
+4. **Áp migration:** `npm run db:prod:migrate` → đọc danh sách, gõ đúng mã endpoint (`ep-<mã nhánh production>…`) khi được hỏi. Migration có lệnh có thể mất dữ liệu (DROP / TRUNCATE / DELETE / đổi kiểu cột) bị chặn trên database đang dùng: đọc kỹ file SQL, nếu chắc chắn thì `npm run db:prod:migrate -- --allow-destructive`. Database còn trống (lần đầu) thì không cần cờ này.
 5. **Dữ liệu danh mục** (lần đầu, và mỗi khi danh mục / Lợi ích đổi): `npm run db:prod:reference` → gõ mã endpoint. Chỉ ghi / cập nhật 21 danh mục, thể loại, phong cách, Lợi ích; không tạo bộ demo, mã giảm giá thử hay file.
 6. **Kiểm tra:** `npm run db:prod:status` lần nữa (chờ áp 0).
 7. **Dọn:** xoá file `.env.production-db`.
@@ -36,7 +36,7 @@ Phát hành bản mới có đổi database: áp migration **trước** khi depl
 Chỉ người dùng chạy, cùng file `.env.production-db` ở bước 1 phía trên.
 
 1. Mở web thật, đăng ký tài khoản bằng giao diện (`/vi/register`). Lệnh không tạo tài khoản.
-2. `npm run db:prod:grant -- <email>`: lệnh đọc tài khoản trước (không ghi) và dừng nếu email không có, hoặc tài khoản đang bị khoá, hoặc đã là Admin. Nếu cần ghi, lệnh hỏi gõ đúng mã endpoint Neon (`ep-long-sun-…`) rồi mới đổi vai trò.
+2. `npm run db:prod:grant -- <email>`: lệnh đọc tài khoản trước (không ghi) và dừng nếu email không có, hoặc tài khoản đang bị khoá, hoặc đã là Admin. Nếu cần ghi, lệnh hỏi gõ đúng mã endpoint Neon (`ep-<mã nhánh production>…`) rồi mới đổi vai trò.
 3. Thu quyền: `npm run db:prod:revoke -- <email>` (cùng cách hỏi). Tài khoản về `USER` và `sessionVersion` tăng: mọi phiên đang đăng nhập của tài khoản bị đăng xuất.
 4. Các lệnh này từ chối khi database chưa ở migration mới nhất (chạy `db:prod:migrate` trước) và chỉ ghi một dòng `User`; không dùng cho tài khoản chưa đăng ký.
 
@@ -79,7 +79,7 @@ Link đổi mỗi lần chạy; mất khi máy ngủ hoặc tắt tiến trình.
 
 ## 5. Sao lưu tài liệu
 
-- Repo dùng git từ 2026-11-21 (bước 7.6, nhánh `main`, đẩy lên GitHub `thiennguyenk01/asset2d`, riêng tư). Các dòng sau về sao lưu tài liệu giữ nguyên lịch sử: Trước khi tái cấu trúc tài liệu (2026-11-15) đã sao lưu `CLAUDE.md` và `DESIGN.md` vào `.backup/docs-2026-11-15/` (`*.bak` + `MANIFEST.txt` có SHA-256). **Chỉ xóa bản sao lưu khi người dùng cho phép.**
+- Repo dùng git từ 2026-11-21 (bước 7.6, nhánh `main`, đẩy lên GitHub `thiennguyenk01/asset2d`, riêng tư). Các dòng sau về sao lưu tài liệu giữ nguyên lịch sử: Trước khi tái cấu trúc tài liệu (2026-11-15) đã sao lưu `CLAUDE.md` và `DESIGN.md` vào `.backup/docs-2026-11-15/` (`*.bak` + `MANIFEST.txt` có SHA-256). **Chỉ xóa bản sao lưu khi người dùng cho phép.** *(Thư mục `.backup/` đã xoá 2026-11-26 theo lựa chọn của người dùng, DECISIONS #67.)*
 - `docs/requirements/ORIGINAL-BRIEF.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md` nằm trong `.prettierignore` để `npm run format` không định dạng lại nội dung nguyên văn.
 
 ## 6. Việc vận hành chờ người dùng
@@ -110,7 +110,7 @@ Cài một môi trường (dev; production làm lại với bucket và token ri�
 
 Lựa chọn: DECISIONS #54 (GitHub + Vercel; ai có link cũng mở được; database sạch + 10 bộ demo). Chạy cổng **Demo**, không nhận tiền thật; `robots.txt` chặn công cụ tìm kiếm (không phải production). Lần đầu lên mạng theo #43.
 
-**Hiện tại (2026-11-21):** Vercel (gói Hobby) project `asset2d`, nhánh `main` → bản **Preview**, địa chỉ cố định `https://asset2d-git-main-thien-nguyens-projects-bad6033d.vercel.app`. Code ở GitHub `thiennguyenk01/asset2d` (riêng tư). Database: nhánh Neon `preview` (tách từ `production`, kết nối pooled cho app, direct cho migrate). File: 2 bucket R2 `asset-game-preview-public` (địa chỉ r2.dev) và `asset-game-preview-private`, token riêng chỉ cho 2 bucket đó. Mọi giá trị nằm trong `.env.preview` (không commit) và trong Environment Variables của Vercel (môi trường Preview).
+**Hiện tại (2026-11-21):** Vercel (gói Hobby) project `asset2d`, nhánh `main` → bản **Preview**, địa chỉ cố định `<địa chỉ bản thử trên Vercel>`. Code ở GitHub `thiennguyenk01/asset2d` (riêng tư). Database: nhánh Neon `preview` (tách từ `production`, kết nối pooled cho app, direct cho migrate). File: 2 bucket R2 `asset-game-preview-public` (địa chỉ r2.dev) và `asset-game-preview-private`, token riêng chỉ cho 2 bucket đó. Mọi giá trị nằm trong `.env.preview` (không commit) và trong Environment Variables của Vercel (môi trường Preview). *(2026-11-26: project kết thúc, người dùng xoá project Vercel, nhánh Neon và bucket của bản thử theo §11; `.env.preview` đã xoá, DECISIONS #67.)*
 
 Cài từ đầu:
 
@@ -137,7 +137,7 @@ Lựa chọn: DECISIONS #55 (chuẩn bị trước phần không cần tài kho�
 
 | # | Việc | Ghi chú |
 |---|---|---|
-| 1 | Tên miền `asset2d.id.vn` | Đưa vào Cloudflare (DNS). Dùng cho 2 việc: web (gắn vào dự án Vercel) và ảnh (`media.asset2d.id.vn` gắn vào bucket ảnh R2: Cloudflare → R2 → bucket → Settings → Custom Domains). *(2026-11-26: đã mua, đã thêm vào Cloudflare, chờ đổi nameserver; xem §7.)* *(2026-11-26, #66: người dùng báo Mắt Bão không hỗ trợ DNSSEC nữa, sẽ chuyển tên miền sang nơi khác. `.env.vercel-production` và mẫu `prod:init` đã điền sẵn `APP_URL`, `R2_PUBLIC_BASE_URL`, `MAIL_DRIVER`, `MAIL_FROM` theo tên miền. Gắn `media.asset2d.id.vn` vào R2 cần DNS của tên miền do Cloudflare quản lý; nơi mới không cho đổi nameserver sang Cloudflare thì phải quyết định lại cách phục vụ ảnh.)* |
+| 1 | Tên miền `asset2d.id.vn` | Đưa vào Cloudflare (DNS). Dùng cho 2 việc: web (gắn vào dự án Vercel) và ảnh (`media.asset2d.id.vn` gắn vào bucket ảnh R2: Cloudflare → R2 → bucket → Settings → Custom Domains). *(2026-11-26: đã mua, đã thêm vào Cloudflare, chờ đổi nameserver; xem §7.)* *(2026-11-26, #66: người dùng báo Mắt Bão không hỗ trợ DNSSEC nữa, sẽ chuyển tên miền sang nơi khác. `.env.vercel-production` và mẫu `prod:init` đã điền sẵn `APP_URL`, `R2_PUBLIC_BASE_URL`, `MAIL_DRIVER`, `MAIL_FROM` theo tên miền. Gắn `media.asset2d.id.vn` vào R2 cần DNS của tên miền do Cloudflare quản lý; nơi mới không cho đổi nameserver sang Cloudflare thì phải quyết định lại cách phục vụ ảnh.)* *(2026-11-26, DECISIONS #68: mẫu `prod:init` không còn điền sẵn tên miền; `.env.vercel-production` đã xoá ở #67.)* |
 | 2 | Nhánh Neon `production` | Có sẵn. Chuỗi **pooled** (có `-pooler`) → `DATABASE_URL` của Vercel; chuỗi **direct** chỉ nằm trong `.env.production-db` lúc chạy `db:prod:*`. |
 | 3 | R2 của web thật | 2 bucket `asset-game-prod-public` / `asset-game-prod-private`, token riêng chỉ cho 2 bucket đó, CORS `AllowedOrigins` = địa chỉ web thật ở cả 2 bucket (như §7). |
 | 4 | SePay thật | Tài khoản SePay nối với tài khoản ngân hàng nhận tiền; `SEPAY_MODE=live`, `SEPAY_WEBHOOK_SECRET`, `SEPAY_BANK_ACCOUNT`, `SEPAY_BANK_NAME`, `SEPAY_ACCOUNT_NAME`; webhook trỏ tới `https://<web thật>/api/payments/sepay/webhook`, ký HMAC (#45). |
@@ -178,3 +178,29 @@ Nút "Tiếp tục với Google" chỉ hiện khi môi trường có đủ `AUTH
    - web thật: `.env.vercel-production` rồi Vercel, **chỉ môi trường Production** (§9 bước 4).
 4. Kiểm tra: `/vi/login` có nút "Tiếp tục với Google"; `/api/auth/providers` có `google` với `callbackUrl` đúng địa chỉ đã khai ở bước 2. Google báo `redirect_uri_mismatch`: địa chỉ ở bước 2 không khớp địa chỉ đang mở.
 5. Trước khi mở cho khách trên web thật: **Audience → Publish app** (chuyển sang "In production"). Web chỉ xin `openid`, `email`, `profile`; nếu Google yêu cầu xác minh thương hiệu (tên, logo, tên miền) thì làm theo hướng dẫn trên màn hình.
+
+## 11. Kết thúc project và chạy lại từ đầu (2026-11-26, DECISIONS #67)
+
+**Đã làm trên máy:** `.env.local` = bản chép của `.env.example` (không còn khoá nào); đã xoá `.env.preview`, `.env.vercel-production`, `.backup/`. Code và lịch sử git không có khoá. Repo GitHub giữ riêng tư.
+
+**Người dùng tự xoá trên cloud** (Claude không có quyền vào các tài khoản này). Xoá project / client là mọi khoá cũ hết hiệu lực, kể cả khoá từng dán vào khung chat. Thứ tự:
+
+1. **Vercel:** project → Settings → General → Delete Project (bản build, biến môi trường, tên miền, lịch việc định kỳ đi theo). Gỡ quyền của Vercel với repo: GitHub → Settings → Applications → Vercel → Configure. *(Người dùng báo đã xoá project Vercel, 2026-11-26.)*
+2. **Neon:** project → Settings → Delete project (cả 3 nhánh dev, preview, production; mất vĩnh viễn mọi tài khoản, đơn hàng).
+3. **Cloudflare R2:** mỗi bucket (dev, bản thử, `asset-game-prod-*` nếu đã tạo): Objects → chọn hết → xoá (nhiều file: Settings → Object lifecycle rules, xoá sau 1 ngày), bucket trống thì Settings → Delete bucket. R2 → Manage R2 API Tokens: xoá mọi token của project. Tên miền `asset2d.id.vn` trong Cloudflare: không dùng tiếp thì Overview → Remove site.
+4. **Google Cloud Console:** APIs & Services → Credentials (hoặc Google Auth Platform → Clients) → xoá OAuth client; project chỉ dùng cho web này thì IAM & Admin → Settings → Shut down (Google giữ 30 ngày).
+5. **Resend / SePay** (nếu đã tạo): xoá API key, tên miền (Resend), webhook (SePay). MoMo chỉ dùng khoá thử.
+
+**Chạy lại từ đầu** (bạn hoặc người khác; dữ liệu là demo):
+
+1. Database: cách nhanh nhất là PostgreSQL trong Docker trên máy (mục dưới; không cần tài khoản cloud), hoặc một project Neon mới (`DATABASE_URL` pooled, `DIRECT_URL` direct, `PRODUCTION_DATABASE_HOSTS` = host của nhánh production để guard chặn). Trong `.env.local` điền 2 chuỗi kết nối và `AUTH_SECRET` (`npx auth secret`). Chi tiết: `README.vi.md` (tiếng Việt) / `README.md` (tiếng Anh), mục cài đặt nhanh.
+2. `npm install` → `npm run db:migrate` → `npm run db:seed` (21 danh mục, 10 bộ demo có ảnh DEMO, mã giảm giá demo) → `npm run dev`; đăng ký một tài khoản rồi `npm run admin:grant -- <email>`.
+3. Bản thử / web thật: dựng lại theo §7–§10 (`npm run preview:init`, `npm run prod:init` tạo lại file cấu hình).
+
+**Database trên máy bằng Docker** (đang dùng từ 2026-11-26, DECISIONS #68; không cần tài khoản cloud):
+
+- Container `asset2d-postgres` (`postgres:17`, chỉ mở ở `127.0.0.1:5432`, volume `asset2d-pgdata`, `--restart unless-stopped`: tự chạy khi Docker Desktop bật). Lệnh tạo: `README.vi.md` / `README.md`, mục cài đặt nhanh.
+- `.env.local`: `DATABASE_URL` = `DIRECT_URL` = `postgresql://asset2d:<mật khẩu>@localhost:5432/asset2d` (không phải pooled: guard chỉ cảnh báo); `AUTH_SECRET`, `CRON_SECRET` ngẫu nhiên, chỉ dùng trên máy; các dòng khác giữ như `.env.example` (`MOMO_ENDPOINT` không được để trống: seed báo "Invalid URL").
+- Mỗi lần mở máy: bật Docker Desktop trước `npm run dev`. Tắt database: `docker stop asset2d-postgres`; bật lại: `docker start asset2d-postgres`. Xoá hẳn (mất mọi dữ liệu trên máy): `docker rm -f asset2d-postgres` rồi `docker volume rm asset2d-pgdata`.
+- Đổi `AUTH_SECRET` thì cookie đăng nhập cũ của trình duyệt không còn đọc được (`JWTSessionError: no matching decryption secret` ở console): xoá cookie `authjs.*` của localhost.
+- Admin trên máy: đăng ký trên web rồi `npm run admin:grant -- <email>`.

@@ -7,7 +7,7 @@ import { routing, type Locale } from "@backend/i18n/routing";
 import { safeCallbackPath } from "@backend/lib/auth/callback";
 import { clientIp, loginSubjects, registerSubjects, resetRequestSubjects } from "@backend/lib/rate-limit/rules";
 import { fieldErrors, forgotPasswordSchema, loginSchema, registerSchema, resetPasswordSchema, type AuthErrorKey } from "@backend/lib/schemas/auth";
-import { signOut } from "@backend/auth";
+import { googleSignInEnabled, signIn, signOut } from "@backend/auth";
 import { credentialsSignIn } from "@backend/auth/credentials";
 import { setFlash } from "@backend/flash";
 import { mergeGuestCartOnSignIn } from "@backend/modules/cart/session";
@@ -128,6 +128,16 @@ export async function resetPasswordAction(locale: Locale, token: string, _prev: 
   await setFlash("passwordReset");
   redirect({ href: "/login", locale });
   return { status: "idle" }; // unreachable: redirect() throws
+}
+
+/**
+ * "Continue with Google" (user choice 2026-11-26): off to Google's consent page; Auth.js comes back to
+ * /api/auth/callback/google and then to `callbackUrl` (same-site paths only, like the login form).
+ */
+export async function googleSignInAction(locale: Locale, callbackUrl: string | undefined): Promise<void> {
+  const loc: Locale = hasLocale(routing.locales, locale) ? locale : routing.defaultLocale;
+  if (!googleSignInEnabled()) redirect({ href: "/login", locale: loc });
+  await signIn("google", { redirectTo: `/${loc}${safeCallbackPath(callbackUrl)}` });
 }
 
 export async function logoutAction(): Promise<void> {

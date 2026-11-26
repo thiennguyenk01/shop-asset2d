@@ -106,3 +106,45 @@ export function ChangePasswordForm({ action }: { action: Action }) {
     </form>
   );
 }
+
+/**
+ * "Set a password" (user choice 2026-11-26): an account created with Google has none yet, so there is no current
+ * password to ask for. Success arrives as a flash like a change (the session cookie is re-issued).
+ */
+export function SetPasswordForm({ action }: { action: Action }) {
+  const t = useTranslations("account");
+  const ta = useTranslations("auth");
+  const [state, formAction, pending] = useActionState(action, INITIAL);
+  const ref = useRef<HTMLFormElement>(null);
+  useClearPasswordsOnHide(ref);
+  useFlashOnSuccess(state);
+  const err = (field: string) => state.fields?.[field] && ta(`errors.${state.fields[field]}`);
+
+  return (
+    <form ref={ref} action={formAction} noValidate className="flex flex-col gap-4" data-testid="set-password-form">
+      {state.error && <FormError message={t(`errors.${state.error}`, { minutes: state.retryMinutes ?? 1 })} />}
+      <PasswordField
+        label={t("newPassword")}
+        name="password"
+        autoComplete="new-password"
+        hint={ta("passwordHint", { min: PASSWORD_MIN })}
+        show={ta("showPassword")}
+        hide={ta("hidePassword")}
+        error={err("password")}
+      />
+      <PasswordField
+        label={t("confirmNewPassword")}
+        name="confirmPassword"
+        autoComplete="new-password"
+        show={ta("showPassword")}
+        hide={ta("hidePassword")}
+        error={err("confirmPassword")}
+      />
+      <div>
+        <Button type="submit" disabled={pending}>
+          {pending ? t("setPassword.submitting") : t("setPassword.submit")}
+        </Button>
+      </div>
+    </form>
+  );
+}

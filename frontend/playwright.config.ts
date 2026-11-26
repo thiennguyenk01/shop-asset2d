@@ -4,6 +4,11 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = 3100;
 /** Not a real secret: only the throw-away `next start` of the E2E run uses it (GĐ6.3 scheduled jobs). */
 export const E2E_CRON_SECRET = "e2e-cron-secret-not-used-anywhere-else-000";
+/**
+ * Not a real Google client: it only makes the E2E server show "Continue with Google" (user choice 2026-11-26).
+ * frontend/tests/e2e/google.spec.ts stops the browser at Google's door and checks what the site asked for.
+ */
+export const E2E_GOOGLE_CLIENT_ID = "e2e-not-a-real-client.apps.googleusercontent.com";
 
 /**
  * E2E runs against a production build (`next build` + `next start`) on desktop and mobile.
@@ -37,6 +42,13 @@ export default defineConfig({
     reuseExistingServer: false,
     timeout: 120_000,
     // next start runs as production; Auth.js must trust localhost. CRON_SECRET: a test-only value for frontend/tests/e2e/cron.spec.ts.
-    env: { APP_ENV: "test", AUTH_TRUST_HOST: "true", CRON_SECRET: E2E_CRON_SECRET },
+    // AUTH_GOOGLE_*: a fake Google client so the Google button shows (google.spec.ts never reaches Google itself).
+    env: {
+      APP_ENV: "test",
+      AUTH_TRUST_HOST: "true",
+      CRON_SECRET: E2E_CRON_SECRET,
+      AUTH_GOOGLE_ID: E2E_GOOGLE_CLIENT_ID,
+      AUTH_GOOGLE_SECRET: "e2e-google-secret-not-real",
+    },
   },
 });

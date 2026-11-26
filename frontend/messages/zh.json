@@ -130,6 +130,17 @@
       "tooManyAttempts": "尝试失败次数过多，请 {minutes} 分钟后再试。",
       "tooManyRequests": "来自您网络的请求过多，请 {minutes} 分钟后再试。",
       "shopPaused": "商店已暂停注册新账户（免费额度已用完）。请稍后再来。"
+    },
+    "google": {
+      "button": "使用 Google 继续",
+      "pending": "正在前往 Google…",
+      "or": "或使用邮箱",
+      "errors": {
+        "unverified": "此 Google 账号的邮箱尚未经 Google 验证，无法用于登录。请使用邮箱和密码。",
+        "locked": "此账户已被锁定。如需帮助，请联系商店。",
+        "paused": "商店暂时不接受新账户。请稍后再来。",
+        "failed": "无法使用 Google 登录。请重试，或使用邮箱和密码。"
+      }
     }
   },
   "account": {
@@ -153,7 +164,15 @@
       "signedOut": "登录已过期，请重新登录。",
       "generic": "出错了，请重试。",
       "tooManyAttempts": "当前密码输错次数过多，请 {minutes} 分钟后再试。"
-    }
+    },
+    "setPassword": {
+      "title": "设置密码",
+      "intro": "此账户通过 Google 创建，尚无密码。设置密码后也可以用邮箱登录。",
+      "submit": "设置密码",
+      "submitting": "正在保存…",
+      "done": "密码已设置。"
+    },
+    "googleLinked": "已关联 Google：可以使用“使用 Google 继续”登录。"
   },
   "cart": {
     "badge": "{count, plural, other {购物车中有 # 个素材包}}",

@@ -2,12 +2,12 @@
 
 import { refresh } from "next/cache";
 import { passwordChangeSubjects } from "@backend/lib/rate-limit/rules";
-import { changePasswordSchema, fieldErrors, profileSchema, type AuthErrorKey } from "@backend/lib/schemas/auth";
+import { changePasswordSchema, fieldErrors, profileSchema, resetPasswordSchema, type AuthErrorKey } from "@backend/lib/schemas/auth";
 import { credentialsSignIn } from "@backend/auth/credentials";
 import { AuthError, requireUser } from "@backend/auth/guards";
 import { setFlash } from "@backend/flash";
 import { checkRateLimit, clearRateLimit, recordFailure } from "@backend/modules/rate-limit/service";
-import { changePassword, updateProfile } from "./service";
+import { changePassword, setPassword, updateProfile } from "./service";
 
 /**
  * Account page actions (Phase 3.2). Each one re-checks the session itself (defense in depth — never trust
@@ -81,5 +81,26 @@ export async function changePasswordAction(_prev: AccountFormState, form: FormDa
   // The new session cookie makes Next re-render the whole tree (form state and toasts may reset), so the
   // confirmation travels as a flash: the form or <FlashToast /> shows it, whichever runs first.
   await setFlash("passwordChanged");
+  return { status: "success", savedAt: Date.now() };
+}
+
+/**
+ * "Set a password" for an account created with Google (user choice 2026-11-26): new password + confirmation only.
+ * The service refuses once the account has a password (then the change-password form, which asks for the current
+ * one, is the way). Like a change, every session ends; this device signs in again with the new password.
+ */
+export async function setPasswordAction(_prev: AccountFormState, form: FormData): Promise<AccountFormState> {
+  const user = await signedInUser();
+  if (!user) return { status: "error", error: "signedOut" };
+  const parsed = resetPasswordSchema.safeParse({ password: str(form, "password"), confirmPassword: str(form, "confirmPassword") });
+  if (!parsed.success) return { status: "error", fields: fieldErrors(parsed.error) };
+
+  const result = await setPassword(user.id, parsed.data.password);
+  if (!result.ok) {
+    refresh(); // the account has a password already: show the change-password form instead
+    return { status: "error", error: "generic" };
+  }
+  if (!(await credentialsSignIn(result.email, parsed.data.password))) return { status: "error", error: "signedOut" };
+  await setFlash("passwordSet");
   return { status: "success", savedAt: Date.now() };
 }

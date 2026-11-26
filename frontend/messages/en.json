@@ -130,6 +130,17 @@
       "tooManyAttempts": "Too many failed attempts. Please try again in {minutes, plural, one {# minute} other {# minutes}}.",
       "tooManyRequests": "Too many requests from your network. Please try again in {minutes, plural, one {# minute} other {# minutes}}.",
       "shopPaused": "The shop has paused new accounts (its free storage is used up). Please come back later."
+    },
+    "google": {
+      "button": "Continue with Google",
+      "pending": "Opening Google…",
+      "or": "or use your email",
+      "errors": {
+        "unverified": "Google has not verified the email of this Google account, so it cannot be used to sign in. Use your email and password instead.",
+        "locked": "This account is locked. Contact the shop if you need help.",
+        "paused": "The shop is not taking new accounts right now. Please come back later.",
+        "failed": "Signing in with Google did not work. Please try again, or use your email and password."
+      }
     }
   },
   "account": {
@@ -153,7 +164,15 @@
       "signedOut": "Your session has expired. Please sign in again.",
       "generic": "Something went wrong, please try again.",
       "tooManyAttempts": "Too many wrong current passwords. Please try again in {minutes, plural, one {# minute} other {# minutes}}."
-    }
+    },
+    "setPassword": {
+      "title": "Set a password",
+      "intro": "This account was created with Google and has no password yet. Set one to also sign in with your email.",
+      "submit": "Set password",
+      "submitting": "Saving…",
+      "done": "Password set."
+    },
+    "googleLinked": "Linked to Google: you can sign in with \"Continue with Google\"."
   },
   "cart": {
     "badge": "{count, plural, one {# pack in cart} other {# packs in cart}}",

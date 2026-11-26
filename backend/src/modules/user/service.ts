@@ -3,7 +3,15 @@ import { Prisma, type Locale } from "@backend/generated/prisma/client";
 import { hashPassword, verifyPassword } from "@backend/auth/password";
 import type { ChangePasswordInput, ProfileInput, RegisterInput } from "@backend/lib/schemas/auth";
 import { databaseBlockedByFreeTier } from "@backend/modules/usage/guard";
-import { createUser, findUserCredentials, findUserProfile, updatePasswordAndRevokeSessions, updateUserName } from "./repository";
+import {
+  createUser,
+  findSignInMethods,
+  findUserCredentials,
+  findUserProfile,
+  setFirstPassword,
+  updatePasswordAndRevokeSessions,
+  updateUserName,
+} from "./repository";
 
 /** shopPaused: "free plans only" is on and the database has reached the free allowance. */
 export type RegisterResult = { ok: true; userId: string } | { ok: false; error: "emailTaken" | "shopPaused" };
@@ -41,6 +49,20 @@ export async function changePassword(userId: string, input: ChangePasswordInput)
   if (!(await verifyPassword(user.passwordHash, input.currentPassword))) return { ok: false, error: "wrongPassword" };
   await updatePasswordAndRevokeSessions(userId, await hashPassword(input.newPassword));
   return { ok: true, email: user.email };
+}
+
+/**
+ * First password of an account created with Google (user choice 2026-11-26): no current password to check, so it
+ * only works while the account has none. Bumps sessionVersion; the action signs this device in again.
+ */
+export async function setPassword(userId: string, password: string): Promise<{ ok: true; email: string } | { ok: false }> {
+  const row = await setFirstPassword(userId, await hashPassword(password));
+  return row ? { ok: true, email: row.email } : { ok: false };
+}
+
+/** How the signed-in account can sign in (account page: change vs. set password, "linked to Google"). */
+export function getSignInMethods(userId: string) {
+  return findSignInMethods(userId);
 }
 
 /** Profile data for the account page (the caller passes the signed-in user's id, never a client value). */

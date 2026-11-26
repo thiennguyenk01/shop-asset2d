@@ -3,11 +3,13 @@ import { getTranslations } from "next-intl/server";
 import { Suspense, type ReactNode } from "react";
 import { AuthCard, AuthFormSkeleton } from "@/components/account/auth-card";
 import { RegisterForm } from "@/components/account/auth-forms";
+import { GoogleSignIn } from "@/components/account/google-sign-in";
 import { Link, redirect } from "@backend/i18n/navigation";
 import type { Locale } from "@backend/i18n/routing";
 import { DEFAULT_AFTER_LOGIN, safeCallbackPath } from "@backend/lib/auth/callback";
+import { googleSignInEnabled } from "@backend/auth";
 import { getCurrentUser } from "@backend/auth/current-user";
-import { registerAction } from "@backend/modules/user/actions";
+import { googleSignInAction, registerAction } from "@backend/modules/user/actions";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("auth.register");
@@ -51,7 +53,14 @@ async function RegisterContent({ locale, searchParams }: { locale: Locale; searc
   const [user, sp] = await Promise.all([getCurrentUser(), searchParams]);
   const callbackUrl = safeCallbackPath(sp.callbackUrl);
   if (user) redirect({ href: callbackUrl, locale }); // already signed in
-  return <RegisterForm action={registerAction.bind(null, locale)} callbackUrl={callbackUrl === DEFAULT_AFTER_LOGIN ? undefined : callbackUrl} />;
+  const back = callbackUrl === DEFAULT_AFTER_LOGIN ? undefined : callbackUrl;
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Google creates the account on first use (user choice 2026-11-26). */}
+      {googleSignInEnabled() && <GoogleSignIn action={googleSignInAction.bind(null, locale, back)} />}
+      <RegisterForm action={registerAction.bind(null, locale)} callbackUrl={back} />
+    </div>
+  );
 }
 
 async function SwitchLink({ searchParams }: { searchParams: Search }) {

@@ -77,6 +77,13 @@ const baseSchema = z.object({
   DATABASE_URL: optionalString,
   DIRECT_URL: optionalString,
   AUTH_SECRET: optionalString,
+  /**
+   * "Continue with Google" (user choice 2026-11-26): the OAuth client of the shop's Google Cloud project. Both or
+   * neither: without them the button is hidden and only email + password sign-in exists. Only in .env.local / the
+   * host's settings, never in the repo.
+   */
+  AUTH_GOOGLE_ID: optionalString,
+  AUTH_GOOGLE_SECRET: optionalString,
   PAYMENT_PROVIDER: z.enum(PAYMENT_PROVIDERS).default("demo"),
   STORAGE_DRIVER: z.enum(STORAGE_DRIVERS).default("local"),
   STORAGE_LOCAL_ROOT: z.string().default(".storage"),
@@ -156,6 +163,10 @@ export function parseEnv(raw: RawEnv): Env {
     if (!env.CRON_SECRET || env.CRON_SECRET.length < 32) {
       problems.push("CRON_SECRET là bắt buộc trên production và phải dài tối thiểu 32 ký tự (bảo vệ /api/cron/*).");
     }
+  }
+
+  if (!env.AUTH_GOOGLE_ID !== !env.AUTH_GOOGLE_SECRET) {
+    problems.push("AUTH_GOOGLE_ID và AUTH_GOOGLE_SECRET phải điền cả hai (bật đăng nhập Google) hoặc bỏ trống cả hai.");
   }
 
   if (env.MAIL_DRIVER === "resend" && !env.RESEND_API_KEY?.startsWith("re_")) {

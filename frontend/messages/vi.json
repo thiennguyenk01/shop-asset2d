@@ -130,6 +130,17 @@
       "tooManyAttempts": "Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau {minutes} phút.",
       "tooManyRequests": "Có quá nhiều yêu cầu từ mạng của bạn. Vui lòng thử lại sau {minutes} phút.",
       "shopPaused": "Cửa hàng tạm dừng nhận tài khoản mới (đã dùng hết dung lượng miễn phí). Vui lòng quay lại sau."
+    },
+    "google": {
+      "button": "Tiếp tục với Google",
+      "pending": "Đang chuyển tới Google…",
+      "or": "hoặc dùng email",
+      "errors": {
+        "unverified": "Email của tài khoản Google này chưa được Google xác minh, nên không dùng để đăng nhập được. Hãy dùng email và mật khẩu.",
+        "locked": "Tài khoản này đang bị khoá. Liên hệ cửa hàng nếu bạn cần hỗ trợ.",
+        "paused": "Cửa hàng đang tạm dừng nhận tài khoản mới. Vui lòng quay lại sau.",
+        "failed": "Không đăng nhập được bằng Google. Vui lòng thử lại, hoặc dùng email và mật khẩu."
+      }
     }
   },
   "account": {
@@ -153,7 +164,15 @@
       "signedOut": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
       "generic": "Có lỗi xảy ra, vui lòng thử lại.",
       "tooManyAttempts": "Bạn đã nhập sai mật khẩu hiện tại quá nhiều lần. Vui lòng thử lại sau {minutes} phút."
-    }
+    },
+    "setPassword": {
+      "title": "Đặt mật khẩu",
+      "intro": "Tài khoản này tạo bằng Google và chưa có mật khẩu. Đặt mật khẩu để đăng nhập được cả bằng email.",
+      "submit": "Đặt mật khẩu",
+      "submitting": "Đang lưu…",
+      "done": "Đã đặt mật khẩu."
+    },
+    "googleLinked": "Đã liên kết Google: bạn đăng nhập được bằng nút \"Tiếp tục với Google\"."
   },
   "cart": {
     "badge": "{count, plural, other {# bộ trong giỏ}}",

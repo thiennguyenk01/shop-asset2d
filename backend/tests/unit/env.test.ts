@@ -129,4 +129,14 @@ describe("parseEnv", () => {
   it("allows Demo Payment on preview deployments", () => {
     expect(() => parseEnv({ ...prodBase, APP_ENV: "preview", PAYMENT_PROVIDER: "demo" })).not.toThrow();
   });
+  it("Google sign-in needs both its client id and secret, or neither (user choice 2026-11-26)", () => {
+    expect(() => parseEnv({ ...prodBase })).not.toThrow();
+    expect(parseEnv({ ...prodBase, AUTH_GOOGLE_ID: "id.apps.googleusercontent.com", AUTH_GOOGLE_SECRET: "s" })).toMatchObject({
+      AUTH_GOOGLE_ID: "id.apps.googleusercontent.com",
+      AUTH_GOOGLE_SECRET: "s",
+    });
+    expect(() => parseEnv({ ...prodBase, AUTH_GOOGLE_ID: "id.apps.googleusercontent.com" })).toThrow(/AUTH_GOOGLE_ID/);
+    expect(() => parseEnv({ ...prodBase, AUTH_GOOGLE_SECRET: "s" })).toThrow(/AUTH_GOOGLE_SECRET/);
+    expect(() => parseEnv({ ...prodBase, AUTH_GOOGLE_ID: "", AUTH_GOOGLE_SECRET: "" })).not.toThrow();
+  });
 });

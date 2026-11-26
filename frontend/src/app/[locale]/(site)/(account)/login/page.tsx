@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { AuthCard, AuthFormSkeleton } from "@/components/account/auth-card";
-import { LoginForm } from "@/components/account/auth-forms";
+import { FormError, LoginForm } from "@/components/account/auth-forms";
+import { GoogleSignIn } from "@/components/account/google-sign-in";
 import { Link, redirect } from "@backend/i18n/navigation";
 import type { Locale } from "@backend/i18n/routing";
 import { DEFAULT_AFTER_LOGIN, safeCallbackPath } from "@backend/lib/auth/callback";
+import { googleErrorFromParam } from "@backend/lib/auth/google";
+import { googleSignInEnabled } from "@backend/auth";
 import { getCurrentUser } from "@backend/auth/current-user";
-import { loginAction } from "@backend/modules/user/actions";
+import { googleSignInAction, loginAction } from "@backend/modules/user/actions";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("auth.login");
@@ -41,7 +44,20 @@ async function LoginContent({ locale, searchParams }: { locale: Locale; searchPa
   const [user, sp] = await Promise.all([getCurrentUser(), searchParams]);
   const callbackUrl = safeCallbackPath(sp.callbackUrl);
   if (user) redirect({ href: callbackUrl, locale }); // already signed in
-  return <LoginForm action={loginAction.bind(null, locale)} callbackUrl={callbackUrl === DEFAULT_AFTER_LOGIN ? undefined : callbackUrl} />;
+  const back = callbackUrl === DEFAULT_AFTER_LOGIN ? undefined : callbackUrl;
+  // A Google attempt that did not sign in comes back here with ?error= (user choice 2026-11-26).
+  const googleError = googleErrorFromParam(sp.error);
+  const tg = await getTranslations("auth.google");
+  return (
+    <div className="flex flex-col gap-4">
+      {googleSignInEnabled() ? (
+        <GoogleSignIn action={googleSignInAction.bind(null, locale, back)} error={googleError} />
+      ) : (
+        googleError && <FormError message={tg(`errors.${googleError}`)} />
+      )}
+      <LoginForm action={loginAction.bind(null, locale)} callbackUrl={back} />
+    </div>
+  );
 }
 
 async function SwitchLink({ searchParams }: { searchParams: Search }) {

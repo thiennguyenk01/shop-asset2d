@@ -1,6 +1,28 @@
 import "server-only";
 import type { ExtraDownloadsSettings } from "@backend/lib/admin/settings-rules";
+import { readContactSettings, sameContactSettings, type ContactSetting } from "@backend/lib/contact/channels";
 import { getDb } from "@backend/db";
+
+/**
+ * Save the contact channels (user choice 2026-11-26) with their AuditLog row in one transaction (no settings row
+ * yet: create it with the default "more downloads" offer). Returns false when nothing changed (no row, no log).
+ */
+export function saveContactChannelsRow(value: ContactSetting[], defaults: ExtraDownloadsSettings, adminId: string): Promise<boolean> {
+  return getDb().$transaction(async (tx) => {
+    const row = await tx.shopSettings.findUnique({ where: { id: 1 }, select: { contactChannels: true } });
+    const before = readContactSettings(row?.contactChannels ?? null);
+    if (sameContactSettings(before, value)) return false;
+    await tx.shopSettings.upsert({
+      where: { id: 1 },
+      create: { id: 1, extraDownloadsCount: defaults.count, extraDownloadsPriceVnd: defaults.priceVnd, contactChannels: value },
+      update: { contactChannels: value },
+    });
+    await tx.auditLog.create({
+      data: { adminId, action: "settings.contact", entity: "ShopSettings", entityId: "1", diff: { contactChannels: { before, after: value } } },
+    });
+    return true;
+  });
+}
 
 /** Last few saves of Settings, newest first (who and when; the diff holds before → after). */
 export function findSettingsHistory(take: number) {

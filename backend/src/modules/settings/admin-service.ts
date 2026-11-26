@@ -7,8 +7,15 @@ import {
 } from "@backend/lib/admin/settings-rules";
 import { DEFAULT_EXTRA_DOWNLOADS } from "@backend/lib/download/rules";
 import { freeTierOpenConfirmed } from "@backend/lib/admin/settings-rules";
-import { findSettingsHistory, saveFreeTierOnlyRow, saveShopSettingsRows } from "./admin-repository";
-import { findShopSettings } from "./repository";
+import {
+  parseContactForm,
+  readContactSettings,
+  type ContactError,
+  type ContactKind,
+  type ContactSetting,
+} from "@backend/lib/contact/channels";
+import { findSettingsHistory, saveContactChannelsRow, saveFreeTierOnlyRow, saveShopSettingsRows } from "./admin-repository";
+import { findContactChannels, findShopSettings } from "./repository";
 import { getExtraDownloadsOffer } from "./service";
 
 /**
@@ -23,6 +30,8 @@ const DEFAULTS: ExtraDownloadsSettings = {
 export type AdminSettingsView = {
   /** "Free plans only" (user choice 2026-11-22): on until the Admin turns it off. */
   freeTierOnly: boolean;
+  /** Contact channels of the chat button (user choice 2026-11-26): all of them, in the saved order. */
+  contacts: ContactSetting[];
   extraDownloads: ExtraDownloadsSettings;
   defaults: ExtraDownloadsSettings;
   history: {
@@ -40,9 +49,15 @@ const asOffer = (v: unknown): ExtraDownloadsSettings | null => {
 };
 
 export async function getAdminSettings(): Promise<AdminSettingsView> {
-  const [extraDownloads, history, row] = await Promise.all([getExtraDownloadsOffer(), findSettingsHistory(10), findShopSettings()]);
+  const [extraDownloads, history, row, contacts] = await Promise.all([
+    getExtraDownloadsOffer(),
+    findSettingsHistory(10),
+    findShopSettings(),
+    findContactChannels(),
+  ]);
   return {
     freeTierOnly: row?.freeTierOnly ?? true,
+    contacts: readContactSettings(contacts),
     extraDownloads,
     defaults: DEFAULTS,
     history: history.map((h) => {
@@ -69,7 +84,19 @@ export async function saveAdminSettings(
   return { ok: true, changed: await saveShopSettingsRows(parsed.value, DEFAULTS, adminId) };
 }
 
-export type SetFreeTierResult = { ok: true; changed: boolean } | { ok: false; error: "confirm" };
+export type SaveContactsResult = { ok: true; changed: boolean } | { ok: false; fields: Partial<Record<ContactKind, ContactError>> };
+
+/** Contact channels of the chat button (user choice 2026-11-26): see lib/contact/channels.ts for the rules. */
+export async function saveContactChannels(
+  raw: { order: unknown[]; values: Partial<Record<ContactKind, unknown>>; enabled: Partial<Record<ContactKind, boolean>> },
+  adminId: string,
+): Promise<SaveContactsResult> {
+  const parsed = parseContactForm(raw);
+  if (!parsed.ok) return parsed;
+  return { ok: true, changed: await saveContactChannelsRow(parsed.value, DEFAULTS, adminId) };
+}
+
+export type SetFreeTierResult ={ ok: true; changed: boolean } | { ok: false; error: "confirm" };
 
 /** Turning the mode off needs the typed word (FREE_TIER_OPEN_WORD); turning it back on needs nothing. */
 export async function setFreeTierOnly(value: boolean, typed: unknown, adminId: string): Promise<SetFreeTierResult> {

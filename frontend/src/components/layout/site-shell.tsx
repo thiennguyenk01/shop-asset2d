@@ -4,7 +4,7 @@ import { CartCountServer } from "@/components/cart/cart-count-server";
 import { AppSidebar, getCopyrightYear } from "@/components/layout/app-sidebar";
 import { AppTopbar } from "@/components/layout/app-topbar";
 import { BackToTop } from "@/components/layout/back-to-top";
-import { ContactChat } from "@/components/layout/contact-chat";
+import { ContactChatServer } from "@/components/layout/contact-chat-server";
 import { MobileTabbar } from "@/components/layout/mobile-tabbar";
 
 /**
@@ -30,7 +30,10 @@ export async function SiteShell({ children }: { children: ReactNode }) {
         <MobileTabbar copyright={tf("copyright", { year })} />
       </Suspense>
       <BackToTop />
-      <ContactChat />
+      {/* Contact channels: streamed in at request time (see ContactChatServer). */}
+      <Suspense>
+        <ContactChatServer />
+      </Suspense>
       {/* Cart badge count: reads the session / cart cookie, so it streams in. */}
       <Suspense>
         <CartCountServer />

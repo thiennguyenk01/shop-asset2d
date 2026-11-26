@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
+import { ContactForm } from "@/components/admin/contact-form";
 import { FormCard } from "@/components/admin/fields";
 import { FreeTierForm } from "@/components/admin/free-tier-form";
 import { SettingsForm } from "@/components/admin/settings-form";
 import type { Locale } from "@backend/i18n/routing";
 import type { ExtraDownloadsSettings } from "@backend/lib/admin/settings-rules";
+import { CONTACT_KINDS, type ContactKind } from "@backend/lib/contact/channels";
 import { FREE_DOWNLOADS_PER_PACK } from "@backend/lib/download/rules";
 import { formatVnd } from "@backend/lib/format";
 import { requireAdminPage } from "@backend/auth/admin-page";
@@ -43,7 +45,13 @@ async function Settings({ params }: { params: Promise<{ locale: string }> }) {
   await requireAdminPage(); // before reading any data
   const { locale: raw } = await params;
   const locale = raw as Locale;
-  const [s, t, format] = await Promise.all([getAdminSettings(), getTranslations("adminSettings"), getFormatter()]);
+  const [s, t, tc, format] = await Promise.all([
+    getAdminSettings(),
+    getTranslations("adminSettings"),
+    getTranslations("contactChat"),
+    getFormatter(),
+  ]);
+  const contactNames = Object.fromEntries(CONTACT_KINDS.map((k) => [k, tc(`channels.${k}.name`)])) as Record<ContactKind, string>;
   const offer = (o: ExtraDownloadsSettings | null) =>
     o ? t("offerText", { count: o.count, price: formatVnd(o.priceVnd, locale) }) : "—";
 
@@ -58,6 +66,10 @@ async function Settings({ params }: { params: Promise<{ locale: string }> }) {
           {s.freeTierOnly ? t("freeTierOn") : t("freeTierOff")}
         </p>
         <FreeTierForm on={s.freeTierOnly} />
+      </FormCard>
+
+      <FormCard title={t("contactTitle")} intro={t("contactIntro")}>
+        <ContactForm initial={s.contacts} names={contactNames} />
       </FormCard>
 
       <FormCard

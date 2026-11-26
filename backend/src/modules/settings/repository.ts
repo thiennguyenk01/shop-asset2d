@@ -8,3 +8,9 @@ export function findShopSettings() {
     select: { extraDownloadsCount: true, extraDownloadsPriceVnd: true, freeTierOnly: true, updatedAt: true },
   });
 }
+
+/** The stored contact channels (JSON; read with readContactSettings), or null. */
+export async function findContactChannels(): Promise<unknown> {
+  const row = await getDb().shopSettings.findUnique({ where: { id: 1 }, select: { contactChannels: true } });
+  return row?.contactChannels ?? null;
+}

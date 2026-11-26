@@ -1,7 +1,7 @@
 import { loadEnvConfig } from "@next/env";
 import { test as base, type BrowserContext } from "@playwright/test";
 
-export { expect, type APIRequestContext, type Browser, type Page } from "@playwright/test";
+export { expect, type APIRequestContext, type Browser, type Locator, type Page } from "@playwright/test";
 
 /**
  * Every E2E spec imports `test` from here (GĐ7.2). Each test gets its own made-up client IP, sent as the

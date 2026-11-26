@@ -574,6 +574,9 @@ model ShopSettings {
   /// "Free plans only" (user choice 2026-11-22): while true, uploads, sign-ups, orders and mails stop at the free
   /// allowances (backend/src/lib/usage/rules.ts). Only the Admin turns it off, with a typed confirmation.
   freeTierOnly           Boolean @default(true)
+  /// Contact channels of the floating chat button (user choice 2026-11-26): ordered list of
+  /// { kind, value, enabled } (backend/src/lib/contact/channels.ts). null = none filled yet.
+  contactChannels        Json?
 
   updatedAt DateTime @updatedAt
 }

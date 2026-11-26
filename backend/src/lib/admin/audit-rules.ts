@@ -38,6 +38,7 @@ export const AUDIT_ACTIONS = [
   "coupon.delete",
   "settings.update",
   "settings.freeTier",
+  "settings.contact",
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 

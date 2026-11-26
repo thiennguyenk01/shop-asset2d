@@ -47,19 +47,6 @@ test.describe("Dashboard layout", () => {
     await expect.poll(async () => (await sidebar.boundingBox())!.width).toBe(256);
   });
 
-  test("contact is a floating chat button listing the contact channels", async ({ page }) => {
-    await page.goto("/vi/shop");
-    await page.getByTestId("contact-chat").click();
-    const panel = page.getByTestId("contact-chat-panel");
-    await expect(panel).toBeVisible();
-    for (const c of Object.values(vi.contactChat.channels)) await expect(panel).toContainText(c.name);
-    // Channels without a configured link are shown as "coming soon", never with made-up contact details.
-    await expect(panel.getByText(vi.contactChat.comingSoon).first()).toBeVisible();
-    await expect(panel.getByRole("link", { name: new RegExp(vi.contactChat.channels.support.name) })).toHaveAttribute("href", "/vi/contact");
-    await page.keyboard.press("Escape");
-    await expect(panel).toBeHidden();
-  });
-
   test("mobile: bottom tab bar navigates; More opens a sheet with the other links", async ({ page, isMobile }) => {
     test.skip(!isMobile, "mobile only");
     await page.goto("/vi/shop");

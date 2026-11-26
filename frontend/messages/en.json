@@ -406,7 +406,6 @@
     "open": "Contact support",
     "close": "Close contact",
     "title": "Contact",
-    "comingSoon": "Coming soon",
     "channels": {
       "messenger": {
         "name": "Facebook Messenger",
@@ -420,13 +419,13 @@
         "name": "Hotline",
         "description": "Call us for help"
       },
-      "support": {
-        "name": "Submit a support request",
-        "description": "Describe the issue, we reply by email"
-      },
       "telegram": {
         "name": "Telegram",
         "description": "Get news about new packs"
+      },
+      "email": {
+        "name": "Support email",
+        "description": "Email us and we'll reply as soon as we can"
       }
     }
   },
@@ -1467,6 +1466,24 @@
       "outOfRange": "Must be from {min} to {max}.",
       "generic": "Something went wrong. Please try again.",
       "confirm": "Type exactly {word} to confirm."
+    },
+    "contactTitle": "Contact (chat button)",
+    "contactIntro": "The channels listed in the chat button at the bottom right of the shop, in the order below. Only enter the page name, phone number, username or email: the site builds the link. Empty channels, or channels without \"Show\", are not listed; with no channel the chat button is hidden.",
+    "contactShow": "Show",
+    "contactUp": "Move {name} up",
+    "contactDown": "Move {name} down",
+    "contactTry": "Try it",
+    "contactVisible": "{count, plural, =0 {No channel shown: the chat button is hidden} one {# channel shown} other {# channels shown}}.",
+    "contactHints": {
+      "messenger": "Facebook page name (e.g. assetgame2d), or paste a facebook.com/… / m.me/… link",
+      "zalo": "Phone number or Zalo OA id; a zalo.me/… link works too",
+      "hotline": "Vietnamese phone number, e.g. 0912 345 678 or 1900 1234",
+      "telegram": "Telegram username (e.g. @assetgame2d), or paste a t.me/… link",
+      "email": "The address that receives customers' questions"
+    },
+    "contactErrors": {
+      "invalid": "Wrong format: see the hint under the field.",
+      "tooLong": "Too long (at most {max} characters)."
     }
   },
   "adminStats": {
@@ -1563,7 +1580,8 @@
       "coupon_update": "Edited a coupon",
       "coupon_delete": "Deleted a coupon",
       "settings_update": "Changed the settings",
-      "settings_freeTier": "Turn \"free plans only\" on / off"
+      "settings_freeTier": "Turn \"free plans only\" on / off",
+      "settings_contact": "Edit contact channels"
     }
   },
   "email": {

@@ -406,7 +406,6 @@
     "open": "Liên hệ hỗ trợ",
     "close": "Đóng liên hệ",
     "title": "Liên hệ",
-    "comingSoon": "Sắp có",
     "channels": {
       "messenger": {
         "name": "Facebook Messenger",
@@ -420,13 +419,13 @@
         "name": "Hotline",
         "description": "Gọi điện để được hỗ trợ"
       },
-      "support": {
-        "name": "Gửi yêu cầu hỗ trợ",
-        "description": "Mô tả vấn đề, chúng tôi trả lời qua email"
-      },
       "telegram": {
         "name": "Telegram",
         "description": "Nhận tin bộ asset mới"
+      },
+      "email": {
+        "name": "Email hỗ trợ",
+        "description": "Gửi email, chúng tôi trả lời sớm nhất có thể"
       }
     }
   },
@@ -1467,6 +1466,24 @@
       "outOfRange": "Phải từ {min} đến {max}.",
       "generic": "Có lỗi xảy ra. Vui lòng thử lại.",
       "confirm": "Gõ đúng chữ {word} để xác nhận."
+    },
+    "contactTitle": "Liên hệ (nút chat)",
+    "contactIntro": "Các kênh hiện trong nút chat ở góc dưới bên phải của cửa hàng, theo thứ tự dưới đây. Chỉ điền tên trang, số điện thoại, username hoặc email: web tự tạo link. Kênh để trống hoặc bỏ chọn \"Hiện\" thì không hiện; không có kênh nào thì nút chat ẩn.",
+    "contactShow": "Hiện",
+    "contactUp": "Đưa {name} lên",
+    "contactDown": "Đưa {name} xuống",
+    "contactTry": "Mở thử",
+    "contactVisible": "Đang hiện {count, plural, =0 {0 kênh: nút chat đang ẩn} other {# kênh}}.",
+    "contactHints": {
+      "messenger": "Tên trang Facebook (ví dụ assetgame2d) hoặc dán link facebook.com/… / m.me/…",
+      "zalo": "Số điện thoại hoặc mã Zalo OA; dán link zalo.me/… cũng được",
+      "hotline": "Số điện thoại Việt Nam, ví dụ 0912 345 678 hoặc 1900 1234",
+      "telegram": "Username Telegram (ví dụ @assetgame2d) hoặc dán link t.me/…",
+      "email": "Địa chỉ email nhận câu hỏi của khách"
+    },
+    "contactErrors": {
+      "invalid": "Không đúng định dạng: xem gợi ý dưới ô.",
+      "tooLong": "Quá dài (tối đa {max} ký tự)."
     }
   },
   "adminStats": {
@@ -1563,7 +1580,8 @@
       "coupon_update": "Sửa mã giảm giá",
       "coupon_delete": "Xoá mã giảm giá",
       "settings_update": "Sửa cài đặt",
-      "settings_freeTier": "Bật / tắt chế độ chỉ dùng gói miễn phí"
+      "settings_freeTier": "Bật / tắt chế độ chỉ dùng gói miễn phí",
+      "settings_contact": "Sửa kênh liên hệ"
     }
   },
   "email": {
